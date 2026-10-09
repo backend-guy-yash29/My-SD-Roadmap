@@ -63,30 +63,217 @@ The file layout rules are in the [README](../README.md#content-layout).
 
 CI runs steps 1–2 on every pull request, so a malformed content change fails before it reaches production.
 
+## Progress rules
+
+- **An item is either done or not done.** Users mark and unmark items freely; there is no restriction on unmarking.
+- **Revision flag.** Each item also has a `needs_revision` flag, independent of done. It is stored and exposed by the API but not shown in the UI yet.
+- **Streak credit comes from first completions only.** The first time a user marks an item done, a completion is recorded with the date in the user's timezone. That record is permanent:
+  - Unmarking the item does not remove it.
+  - Marking the same item done again later does not add another one.
+- **A study day** is a local date with at least one first completion.
+- **Current streak:** the number of consecutive study days ending today. If today has no completion yet, it counts back from yesterday, so a streak stays alive until the user's day ends.
+- **Longest streak:** the longest run of consecutive study days ever.
+- **Timezone.** Each user has a timezone in their profile (defaults to the browser's timezone on first sign-in). A completion's local date is fixed when it is recorded, so changing timezone later does not rewrite history.
+- **Archived items** (removed from content) keep their progress but are excluded from progress percentages. Their completions still count toward streaks.
+
 ## Data model
 
-| Table | Key columns |
-|---|---|
-| `roadmaps` | `id` (slug), `title`, `summary`, `position` |
-| `parts` | `id`, `roadmap_id`, `title`, `position` |
-| `tracks` | `id` (`roadmap/track-slug`), `part_id`, `title`, `summary`, `position` |
-| `groups` | `id`, `track_id`, `title`, `note`, `position` |
-| `items` | `id`, `track_id`, `group_id`, `title`, `type`, `position`, `metadata` (JSONB), `archived_at` |
-| `resources` | `id`, `item_id`, `source`, `title`, `url`, `position` |
-| `users`, `accounts`, `sessions`, `verification_tokens` | Auth.js schema |
-| `user_item_progress` | `user_id`, `item_id`, `status` (`todo` / `in_progress` / `done` / `revise`), `updated_at`; unique on `(user_id, item_id)` |
-| `notes` | `user_id`, `item_id`, `body` (markdown, capped at 50 KB), `created_at`, `updated_at`; unique on `(user_id, item_id)` |
-| `activity_events` | `id`, `user_id`, `item_id`, `type` (e.g. `status_changed`, `note_saved`, `resource_opened`), `payload` (JSONB), `created_at` |
+PostgreSQL. All timestamps are `timestamptz`. Content tables are written only by the sync; user tables only by the API.
 
-- `user_item_progress` answers "what is my status?" quickly; `activity_events` is an append-only history for streaks, heatmaps and "continue where you left off".
-- Changing a status is one transaction: an upsert into `user_item_progress` (`ON CONFLICT DO UPDATE`) plus an insert into `activity_events`.
-- Foreign keys from progress, notes and activity to `items` and `users` keep the data consistent; deleting a user cascades.
+### Content
+
+```sql
+CREATE TYPE item_type AS ENUM ('topic', 'case-study', 'exercise', 'practice', 'reading');
+
+CREATE TABLE roadmaps (
+  id          text PRIMARY KEY,                 -- 'system-design'
+  title       text NOT NULL,
+  summary     text,
+  position    int  NOT NULL,
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE parts (
+  id          text PRIMARY KEY,                 -- 'system-design/core-foundations'
+  roadmap_id  text NOT NULL REFERENCES roadmaps(id) ON DELETE CASCADE,
+  title       text NOT NULL,
+  position    int  NOT NULL
+);
+
+CREATE TABLE tracks (
+  id          text PRIMARY KEY,                 -- 'system-design/scaling-data'
+  roadmap_id  text NOT NULL REFERENCES roadmaps(id) ON DELETE CASCADE,
+  part_id     text NOT NULL REFERENCES parts(id),
+  title       text NOT NULL,
+  summary     text,
+  position    int  NOT NULL
+);
+
+CREATE TABLE groups (
+  id          text PRIMARY KEY,                 -- 'system-design/scaling-data/replication'
+  track_id    text NOT NULL REFERENCES tracks(id) ON DELETE CASCADE,
+  title       text NOT NULL,
+  note        text,
+  position    int  NOT NULL
+);
+
+CREATE TABLE items (
+  id          text PRIMARY KEY,                 -- 'system-design/scaling-data/leader-follower-replication'
+  roadmap_id  text NOT NULL REFERENCES roadmaps(id),
+  track_id    text NOT NULL REFERENCES tracks(id),
+  group_id    text NOT NULL REFERENCES groups(id),
+  title       text NOT NULL,
+  type        item_type NOT NULL DEFAULT 'topic',
+  position    int  NOT NULL,
+  metadata    jsonb NOT NULL DEFAULT '{}',
+  archived_at timestamptz
+);
+CREATE INDEX items_track_position ON items (track_id, position) WHERE archived_at IS NULL;
+CREATE INDEX items_roadmap ON items (roadmap_id) WHERE archived_at IS NULL;
+
+CREATE TABLE resources (
+  id          bigserial PRIMARY KEY,
+  item_id     text NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+  source      text NOT NULL,                    -- 'AlgoMaster', 'CampusX', ...
+  title       text NOT NULL,
+  url         text NOT NULL CHECK (url LIKE 'https://%'),
+  position    int  NOT NULL,
+  UNIQUE (item_id, url)
+);
+```
+
+Groups and items are never hard-deleted by the sync while user data references them; removed items get `archived_at`, and the sync re-parents or keeps their group row.
+
+### Users and auth
+
+The Auth.js Drizzle adapter tables (`users`, `accounts`, `sessions`, `verification_tokens`), with profile columns added to `users`:
+
+```sql
+CREATE TABLE users (
+  id              text PRIMARY KEY,
+  name            text,
+  email           text UNIQUE,
+  email_verified  timestamptz,
+  image           text,
+  -- profile
+  username        text UNIQUE CHECK (username ~ '^[a-z0-9_-]{3,30}$'),
+  timezone        text NOT NULL DEFAULT 'UTC',     -- IANA name, validated in the API
+  profile_public  boolean NOT NULL DEFAULT false,
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+```
+
+### Progress, completions, notes, activity
+
+```sql
+CREATE TABLE user_item_progress (
+  user_id         text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  item_id         text NOT NULL REFERENCES items(id),
+  is_done         boolean NOT NULL DEFAULT false,
+  needs_revision  boolean NOT NULL DEFAULT false,
+  done_at         timestamptz,                      -- set when marked done, cleared when unmarked
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, item_id)
+);
+CREATE INDEX progress_user_done ON user_item_progress (user_id) WHERE is_done;
+
+-- First completion per user and item. Never updated or deleted by the app.
+CREATE TABLE item_completions (
+  user_id       text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  item_id       text NOT NULL REFERENCES items(id),
+  completed_at  timestamptz NOT NULL DEFAULT now(),
+  local_date    date NOT NULL,                      -- completed_at in the user's timezone at the time
+  PRIMARY KEY (user_id, item_id)
+);
+CREATE INDEX completions_user_date ON item_completions (user_id, local_date);
+
+CREATE TABLE notes (
+  user_id     text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  item_id     text NOT NULL REFERENCES items(id),
+  body        text NOT NULL CHECK (char_length(body) BETWEEN 1 AND 10000),
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, item_id)
+);
+
+CREATE TYPE activity_type AS ENUM (
+  'item_done', 'item_undone', 'revision_flagged', 'revision_cleared',
+  'note_saved', 'note_deleted', 'resource_opened'
+);
+
+CREATE TABLE activity_events (
+  id           bigserial PRIMARY KEY,
+  user_id      text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type         activity_type NOT NULL,
+  item_id      text REFERENCES items(id),
+  resource_id  bigint REFERENCES resources(id) ON DELETE SET NULL,
+  metadata     jsonb NOT NULL DEFAULT '{}',
+  created_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX activity_user_time ON activity_events (user_id, created_at DESC);
+```
+
+- `item_completions` enforces "a first completion counts once" with its primary key: the insert uses `ON CONFLICT DO NOTHING`.
+- `activity_events` is the full history, including unmarks and resource opens; `item_completions` is only for streaks and the heatmap.
+- When the sync renames an item ID (`content/renames.txt`), it updates `item_id` in all four user tables in one transaction.
+
+## API
+
+Reads run in server components; writes are server actions. Inputs are validated with Zod. Every user-specific call requires a session unless marked public.
+
+Errors are returned as `{ ok: false, error: { code, message } }`, with `code` one of:
+- `UNAUTHENTICATED`
+- `NOT_FOUND`: unknown or archived item, resource, roadmap, or a private profile
+- `VALIDATION`
+- `CONFLICT`: username taken
+- `RATE_LIMITED`
+
+### Content (public, cached)
+
+| Function | Returns |
+|---|---|
+| `listRoadmaps()` | Roadmaps with part and track counts and total items |
+| `getRoadmap(roadmapId)` | Parts → tracks, each with title, summary and item count |
+| `getTrack(trackId)` | Track → groups → items (id, title, type) → resources (id, source, title, url) |
+
+### Progress (signed in)
+
+| Function | Input | Behaviour and result |
+|---|---|---|
+| `getRoadmapProgress(roadmapId)` | — | `{ doneItemIds, revisionItemIds, notedItemIds, tracks: { [trackId]: { done, total } }, done, total }` |
+| `setItemDone(itemId, done)` | `done: boolean` | Upserts `is_done` and `done_at`. If `done` and the user has no completion for the item, inserts one with today's local date. Logs `item_done` or `item_undone`. Returns `{ isDone, firstCompletion, currentStreak }` |
+| `setNeedsRevision(itemId, flag)` | `flag: boolean` | Upserts `needs_revision`, logs the event. Not used by the UI yet |
+| `getDashboard()` | — | Per roadmap `{ done, total }`; `currentStreak`, `longestStreak`; `lastActivity` (item, track and time of the latest event) for "continue where you left off"; `heatmap`: completions per local date for the last 365 days |
+
+### Notes (signed in)
+
+| Function | Input | Behaviour |
+|---|---|---|
+| `getNote(itemId)` | — | `{ body, updatedAt }` or `null` |
+| `saveNote(itemId, body)` | plain text, up to 10,000 characters | Empty or whitespace-only `body` deletes the note (`note_deleted`); otherwise upserts (`note_saved`) |
+
+### Resource tracking
+
+- Resource links in the UI point to `/r/[resourceId]`, a route handler. It looks up the resource, logs `resource_opened` with the item and resource if the user is signed in, and responds with a `302` redirect to the resource URL.
+- Signed-out visitors are redirected without logging.
+- Because the redirect is server-side, every open is tracked even when the link is opened in a new tab or with a middle click.
+
+### Profile
+
+| Function | Input | Behaviour |
+|---|---|---|
+| `getMyProfile()` | — | `{ username, name, image, timezone, profilePublic }` |
+| `updateProfile(patch)` | any of `username`, `name`, `timezone` (IANA), `profilePublic` | Validates and saves. `CONFLICT` if the username is taken |
+| `getPublicProfile(username)` | public | If `profile_public` (or the viewer is the owner): name, image, per-roadmap `{ done, total }`, streaks and heatmap. Otherwise `NOT_FOUND`, so private profiles are indistinguishable from missing ones. Never exposes notes, email or activity details |
+
+### Rate limits
+
+Writes are limited per user to about 60 requests a minute (`RATE_LIMITED` beyond that). Resource redirects are not limited.
 
 ## Reads and caching
 
 - **Content pages are static.** Roadmap and track pages render at build or sync time and are served from the CDN; they change only when content syncs.
-- **Progress is one small query per page:** the signed-in user's statuses for one roadmap (`WHERE user_id = ? AND item_id LIKE 'roadmap/%'`, or a join on `tracks`). The client merges it into the static content tree.
-- Ticking an item updates the UI immediately (optimistic update), then saves through a server action.
+- **Progress is one small query per page:** `getRoadmapProgress` joins `user_item_progress` to `items` on `roadmap_id`, skipping archived items. The client merges the result into the static content tree.
+- Ticking an item updates the UI immediately (optimistic update), then saves through `setItemDone`.
 - Progress percentages per track and roadmap are computed from that query. Precomputed counters can be added if it ever gets slow.
 
 ## Pages
@@ -95,8 +282,10 @@ CI runs steps 1–2 on every pull request, so a malformed content change fails b
 |---|---|
 | `/` | Dashboard: every roadmap with a progress bar, current streak, "continue where you left off" |
 | `/[roadmap]` | Parts as section headers, tracks as cards with progress bars |
-| `/[roadmap]/[track]` | Groups as collapsible blocks; items as rows with a status control, type badge, note button and resources |
+| `/[roadmap]/[track]` | Groups as collapsible blocks; items as rows with a done checkbox, type badge, note button and resources |
 | `/sign-in` | Google and GitHub sign-in |
+| `/u/[username]` | Public profile: progress per roadmap, streaks and heatmap (only if the owner made it public) |
+| `/settings` | Username, name, timezone, profile visibility |
 
 Content pages are public; signing in unlocks tracking and notes.
 
@@ -105,7 +294,7 @@ Content pages are public; signing in unlocks tracking and notes.
 - An item with resources shows a resource indicator with a count.
 - **Hovering** (or tapping on touch screens) opens a popover listing every resource: source label, title, and timestamp if any. Each opens the exact URL in a new tab.
 - An item with a single resource can also link directly from its title.
-- Opening a resource logs a `resource_opened` activity event.
+- Each resource link goes through `/r/[resourceId]`, which logs the open and redirects (see Resource tracking).
 
 ## Auth
 
@@ -144,5 +333,6 @@ src/
 4. Content parser, validation and sync script, with tests against `content/`.
 5. Auth.
 6. Pages: dashboard, roadmap, track, with the resource popover.
-7. Progress tracking and activity logging.
+7. Progress tracking, streaks and activity logging.
 8. Notes.
+9. Profile settings and public profiles.
