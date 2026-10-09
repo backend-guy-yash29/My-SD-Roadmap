@@ -15,7 +15,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "content:check": "tsx src/content/cli.ts check",
-    "content:sync": "tsx src/content/cli.ts sync"
+    "content:sync": "tsx src/content/cli.ts sync",
+    "vercel-build": "npm run db:migrate && npm run content:sync && next build"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
