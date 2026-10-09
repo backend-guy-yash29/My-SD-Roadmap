@@ -5,8 +5,8 @@
 ## Recommendation Architecture
 
 - Candidate Generation
-- Ranking
-- Reranking
+- Ranking Stage
+- Reranking Stage
 - User and Item Embeddings
 - Two-Tower Models
 

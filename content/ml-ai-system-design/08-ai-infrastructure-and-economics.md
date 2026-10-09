@@ -1,45 +1,14 @@
-# LLM Serving & AI Infrastructure
+# AI Infrastructure & Economics
 
-> What happens once an LLM application has to serve real production traffic.
-
-## Serving & Scaling
-
-- GPU vs CPU Inference
-- GPU Memory
-- Model Replicas
-- Request Queues
-- Model Routing
-- Autoscaling
-- Streaming Responses
-- KV-Cache Management
-- Token-Based Rate Limiting
-- Multi-Tenancy
-
-## Inference Optimisation
-
-- PagedAttention
-- FlashAttention
-- Prefix Caching
-- Chunked Prefill
-- Speculative Decoding
-- Weight and KV-Cache Quantization (INT8, FP8, INT4)
-- Multi-LoRA Serving
-
-## Caching & Fallbacks
-
-- Prompt Caching
-- Semantic Caching
-- Response Caching
-- Model Fallback
-- Provider Routing
+> The hardware and platforms underneath AI systems, how work is split across GPUs, and what it all costs.
 
 ## Infrastructure
 
+- AI Accelerators (GPUs, TPUs)
 - vLLM
 - Triton
 - Kubernetes GPU Workloads
 - GPU Scheduling
-- AI Accelerators (GPUs, TPUs)
 
 ## AI Economics & Capacity Estimation
 
@@ -68,7 +37,3 @@
 - Dynamic Batching
 - KV-Cache Distribution
 - Disaggregated Prefill / Decode
-
-## Case Studies
-
-- [case-study] ChatGPT at Scale

@@ -1,4 +1,4 @@
-# RAG & Vector Search
+# Retrieval & Vector Search
 
 > Beyond the basic Document → Embedding → Vector DB → LLM.
 
@@ -21,7 +21,6 @@
 - BM25
 - Hybrid Search
 - Reranking (Cross-Encoders)
-- Context Building and Ordering
 
 ## Vector Search
 
@@ -39,17 +38,7 @@
 - Multimodal RAG
 - RAG vs Long Context
 
-## Production RAG
+## Evaluating Retrieval
 
-- Multi-Tenant RAG
-- Permission-Aware RAG
-- Document Updates
-- Index Freshness
 - Retrieval Evaluation
-- RAG Caching
-- Cost Optimisation
-
-## Case Studies
-
-- [case-study] Enterprise Document Q&A
-- [case-study] Perplexity
+- RAG Evaluation

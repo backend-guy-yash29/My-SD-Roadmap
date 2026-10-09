@@ -24,7 +24,10 @@
 
 ## LLM Systems
 
+- [reading] Orca: A Distributed Serving System for Transformer-Based Generative Models (2022)
 - [reading] Efficient Memory Management for LLM Serving with PagedAttention (vLLM, 2023)
+- [reading] Patterns for Building LLM-based Systems & Products (Eugene Yan, 2023)
+- [reading] What We Learned from a Year of Building with LLMs (2024)
 - [reading] Building Effective Agents (Anthropic, 2024)
 
 ## Mock Interviews

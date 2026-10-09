@@ -1,6 +1,6 @@
 # ML & AI System Design
 
-> Extends traditional system design into ML, LLMs, RAG, agents and production AI infrastructure. The goal is architecture-level understanding, not ML research.
+> Architecture and production concerns for ML and LLM systems. Model internals live in Deep Learning, and building techniques (retrieval, context, memory, agents) live in RAG & Context Engineering.
 
 ## ML System Design
 
@@ -13,16 +13,17 @@
 ## LLM & GenAI System Design
 
 - 06-llm-system-design
-- 07-llm-serving-and-infrastructure
-- 08-rag-and-vector-search
-- 09-agentic-system-design
-- 10-ai-evals-safety-and-observability
+- 07-llm-serving
+- 08-ai-infrastructure-and-economics
+- 09-rag-in-production
+- 10-agents-in-production
+- 11-ai-evals-safety-and-observability
 
 ## Case Studies
 
-- 11-ml-case-studies
-- 12-genai-case-studies
+- 12-ml-case-studies
+- 13-genai-case-studies
 
 ## Miscellaneous
 
-- 13-engineering-blogs-and-practice
+- 14-engineering-blogs-and-practice

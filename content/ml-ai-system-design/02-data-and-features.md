@@ -4,7 +4,8 @@
 
 ## Data Engineering Fundamentals
 
-- Data Sources (User Data, System Logs, Third-Party Data)
+- Data Collection and Data Sources
+- Data Validation
 - Batch vs Streaming Data
 - Data Formats (Row vs Columnar, Parquet)
 - Data Pipelines and ETL for ML

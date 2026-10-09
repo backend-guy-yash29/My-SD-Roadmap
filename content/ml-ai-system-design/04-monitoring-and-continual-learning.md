@@ -1,6 +1,6 @@
 # Monitoring & Continual Learning
 
-> Why models degrade after launch, how to detect it, and how to keep them fresh.
+> Why models degrade after launch, how to detect it, how to keep them fresh, and how to keep them fair.
 
 ## Why Models Fail in Production
 
@@ -23,12 +23,22 @@
 - Retraining Triggers and Schedules
 - Stateless Retraining vs Incremental Training
 - Online Learning
-- Model Versioning and Rollback
+- Model Rollback
 
 ## Testing in Production
 
-- Shadow Mode Testing
-- Canary Releases for Models
+- Shadow Deployment
+- Canary Deployment
 - A/B Testing Models
 - Interleaving Experiments
 - Multi-Armed Bandits
+
+## Responsible ML
+
+- Fairness and Bias in Models
+- Explainability
+- Privacy (Differential Privacy, Federated Learning)
+
+## Case Studies
+
+- [case-study] Uber ETA Prediction

@@ -26,7 +26,6 @@
 - Human Evaluation
 - LLM-as-a-Judge
 - Pairwise Comparison and Model Ranking
-- RAG Evaluation
 - Agent Evaluation
 - Offline Evaluation
 - Online Evaluation
@@ -35,16 +34,13 @@
 ## Production Evaluation
 
 - A/B Testing Prompts and Models
-- Shadow Deployment
-- Canary Deployment
 - Prompt Versioning
 - Model Versioning
 - Tracing
-- Collecting User Feedback
 
 ## AI Safety & Security
 
-- Hallucinations
+- Hallucination Mitigation
 - Prompt Injection
 - Indirect Prompt Injection
 - Jailbreaking

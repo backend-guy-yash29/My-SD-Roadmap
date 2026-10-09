@@ -23,16 +23,11 @@
 
 ## Production ML Lifecycle
 
-- Data Collection
-- Data Validation
-- Feature Engineering
+> Data Collection → Data Validation → Feature Engineering → Training → Registry → Deployment → Monitoring → Retraining. Data, features, deployment and monitoring each get their own track next.
+
+- The End-to-End ML Lifecycle
 - Training Pipelines
 - Model Registry
-- Model Deployment
-- Online Inference
-- Batch Inference
-- Monitoring
-- Retraining
 
 ## ML Metrics
 
@@ -40,7 +35,3 @@
 - Online Metrics
 - Business Metrics
 - A/B Testing
-
-## Case Studies
-
-- [case-study] Uber ETA Prediction

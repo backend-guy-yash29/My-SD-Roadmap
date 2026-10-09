@@ -8,7 +8,6 @@
 - Experiment Tracking and Versioning
 - Hyperparameter Tuning
 - Ensembles
-- Distributed Training Overview
 
 ## Offline Evaluation
 
@@ -20,9 +19,9 @@
 
 ## Deployment & Serving
 
+- Model Deployment Strategies
 - Model Serving Architectures
-- Online vs Batch Prediction
 - Real-Time Feature Computation
-- Model Compression (Pruning, Distillation, Quantization)
+- Model Compression for Serving
 - Edge vs Cloud Inference
 - Latency Budgets for Models

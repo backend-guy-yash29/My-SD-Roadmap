@@ -6,8 +6,7 @@
 
 - [case-study] Fraud Detection
 - [case-study] Ad Click Prediction
-- [case-study] Harmful Content Detection
-- [case-study] Content Moderation System
+- [case-study] Harmful Content Detection and Moderation
 
 ## Search & Discovery
 

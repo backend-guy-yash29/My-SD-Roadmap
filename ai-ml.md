@@ -1,6 +1,6 @@
 # AI-ML — Not Yet Migrated
 
-> ML & AI System Design now lives in [content/ml-ai-system-design](content/ml-ai-system-design/roadmap.md). What remains here moves into the Core ML roadmap when it is written.
+> The AI-ML curriculum is now split into roadmaps under [content/](content/). What remains here seeds the ML Foundations roadmap.
 
 ## ML Fundamentals
 

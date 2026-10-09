@@ -8,6 +8,7 @@
 - [case-study] Smart Compose / LLM Autocomplete
 - [case-study] Meeting Assistant
 - [case-study] Language Translation (Google Translate)
+- [case-study] Real-Time Voice Assistant
 - [case-study] Add AI to an Existing Product (Semantic Product Search)
 
 ## RAG
