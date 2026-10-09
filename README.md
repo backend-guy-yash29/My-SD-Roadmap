@@ -4,7 +4,8 @@ System Design roadmap with a tracker , to continue with my study arc , divided a
 ## Curricula
 
 - [System Design](content/system-design/roadmap.md) — core concepts, distributed systems, LLD, HLD, interview prep
-- [AI-ML](ai-ml.md) — ML & AI System Design (ML systems, LLMs, RAG, agents, evals)
+- [ML & AI System Design](content/ml-ai-system-design/roadmap.md) — ML systems, recommendations, LLM serving, RAG, agents, evals
+- Planned: Core ML & Optimizers, Deep Learning → LLMs, RAG · Context · Memory
 
 ## Content layout
 
@@ -21,6 +22,7 @@ Each roadmap is a folder under `content/`. `roadmap.md` lists its parts and trac
 - [case-study] A design problem
 - [exercise] A hands-on exercise
 - [practice] A countable practice task
+- [reading] An article or paper to read
 ```
 
 - Exactly one `#` heading, on the first line.
