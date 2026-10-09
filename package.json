@@ -1,0 +1,46 @@
+{
+  "name": "my-sd-roadmap",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "content:check": "tsx src/content/cli.ts check",
+    "content:sync": "tsx src/content/cli.ts sync"
+  },
+  "dependencies": {
+    "@auth/drizzle-adapter": "^1.11.3",
+    "@radix-ui/react-popover": "^1.1.15",
+    "drizzle-orm": "^0.45.4",
+    "next": "^15.5.27",
+    "next-auth": "^5.0.0-beta.32",
+    "postgres": "^3.4.9",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^22.20.5",
+    "@types/react": "19.1",
+    "@types/react-dom": "19.1",
+    "drizzle-kit": "^0.31.4",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.27",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.18",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

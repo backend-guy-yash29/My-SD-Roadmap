@@ -1,0 +1,2 @@
+# Item ID renames, one per line: old-id -> new-id
+# The content sync moves progress, completions, notes and activity from the old ID to the new one.
