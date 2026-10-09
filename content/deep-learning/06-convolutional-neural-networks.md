@@ -42,6 +42,7 @@
   - [CampusX: What does a CNN see?](https://www.youtube.com/watch?v=WJysB1RK2vM)
 - Transfer Learning: Fine-Tuning vs Feature Extraction
   - [CampusX: What is Transfer Learning? Transfer Learning in Keras](https://www.youtube.com/watch?v=WWcgHjuKVqA)
+  - [CampusX PyTorch: Transfer Learning using PyTorch](https://www.youtube.com/watch?v=aPu6a5htRXM)
 - Functional API for Non-Linear Architectures
   - [CampusX: Keras Functional Model](https://www.youtube.com/watch?v=OvQQP1QVru8)
 
@@ -55,3 +56,5 @@
 
 - [exercise] Cat vs Dog Image Classifier
   - [CampusX: Cat Vs Dog Image Classification Project](https://www.youtube.com/watch?v=0K4J_PTgysc)
+- [exercise] Build a CNN in PyTorch
+  - [CampusX PyTorch: Building a CNN using PyTorch](https://www.youtube.com/watch?v=hkiBZLRFvO4)

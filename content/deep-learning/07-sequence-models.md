@@ -39,3 +39,6 @@
   - [CampusX: RNN Sentiment Analysis](https://www.youtube.com/watch?v=JgnbwKnHMZQ)
 - [exercise] Next-Word Predictor with an LSTM
   - [CampusX: LSTM](https://www.youtube.com/watch?v=fiqo6uPCJVI)
+  - [CampusX PyTorch: Next Word Predictor using Pytorch](https://www.youtube.com/watch?v=FAUha5mYSGQ)
+- [exercise] Question Answering System with an RNN in PyTorch
+  - [CampusX PyTorch: RNN using PyTorch](https://www.youtube.com/watch?v=xjzWrPQ66VQ)

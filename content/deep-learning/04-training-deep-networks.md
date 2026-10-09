@@ -40,8 +40,10 @@
 
 - How to Improve a Neural Network's Performance
   - [CampusX: How to Improve the Performance of a Neural Network](https://www.youtube.com/watch?v=Ue_6n1yT_R8)
-- Hyperparameter Tuning (Keras Tuner)
+  - [CampusX PyTorch: Optimizing the Neural Network](https://www.youtube.com/watch?v=7smLlJ8oj4o)
+- Hyperparameter Tuning (Keras Tuner, Optuna)
   - [CampusX: Keras Tuner](https://www.youtube.com/watch?v=oYnyNLj8RMA)
+  - [CampusX PyTorch: Hyperparameter Tuning the ANN using Optuna](https://www.youtube.com/watch?v=Y3s-wBBLj_o)
 
 ## Projects
 
