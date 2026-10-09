@@ -1,17 +1,23 @@
 # LLM Internals
 
-> How an LLM turns text into tokens, processes them, and generates output one token at a time.
+> How a decoder-only Transformer becomes an LLM: pretraining, tokens, and generating output one token at a time.
+
+## Pretraining
+
+- Next-Token Prediction as a Training Objective
+- Pretraining Data
+- Scaling Laws
+- Mixture of Experts (MoE)
 
 ## Tokens & Context
 
 - Tokens
-- Tokenization
+- Tokenization (BPE)
 - Context Windows
 - Prompt vs Completion
 
 ## Inference Mechanics
 
-- Attention
 - Prefill
 - Decode
 - KV Cache
