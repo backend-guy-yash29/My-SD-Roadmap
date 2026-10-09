@@ -5,9 +5,8 @@ import * as schema from "./schema";
 const globalForDb = globalThis as unknown as { sql?: postgres.Sql };
 
 function createClient() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is not set");
-  return postgres(url, { max: 10 });
+  // postgres() connects lazily, so a missing URL only fails when a query runs (not at build time).
+  return postgres(process.env.DATABASE_URL ?? "postgres://unset-database-url/none", { max: 10 });
 }
 
 // Reuse one connection pool across hot reloads in development.

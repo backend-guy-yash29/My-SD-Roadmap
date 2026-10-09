@@ -44,7 +44,8 @@ The file layout rules are in the [README](../README.md#content-layout).
 - An item's ID is `<roadmap>/<track-slug>/<item-slug>`, where `track-slug` is the file name without its `NN-` prefix and `item-slug` is the item title lower-cased with non-alphanumerics replaced by `-`. Example: `system-design/scaling-data/leader-follower-replication`.
 - The group is not part of the ID, so items can move between groups without losing progress. Reordering tracks (changing `NN`) also keeps IDs.
 - Item slugs must be unique within a track; the sync fails otherwise.
-- **Renaming an item changes its ID.** To keep progress, add a line `old-id -> new-id` to `content/renames.txt`. The sync moves progress, notes and activity to the new ID.
+- **Renaming an item changes its ID.** To keep progress, add a line `old-id -> new-id` to `content/renames.txt`. The sync moves progress, completions, notes and activity to the new ID.
+- **Roadmap order** on the dashboard comes from `content/roadmaps.md`, which lists the roadmap folders in order.
 
 ### Types and resources
 
@@ -59,7 +60,8 @@ The file layout rules are in the [README](../README.md#content-layout).
 2. Validate: layout rules, unique slugs, known tags, well-formed `https://` URLs, and every file listed in `roadmap.md` exists.
 3. Apply `renames.txt`.
 4. Upsert roadmaps, parts, tracks, groups, items and resources by ID, with their positions.
-5. Mark items no longer in the files as `archived_at = now()`. Archived items are hidden but keep their progress and notes; reappearing items are un-archived.
+5. Mark roadmaps, parts, tracks, groups and items no longer in the files as `archived_at = now()`. Archived rows are hidden but stay in the database, so user data keeps its references; anything that reappears is un-archived.
+6. Upsert resources by `(item_id, url)`, so resource IDs (and `/r/[id]` links) stay stable, and delete links no longer listed.
 
 CI runs steps 1–2 on every pull request, so a malformed content change fails before it reaches production.
 
@@ -90,7 +92,8 @@ CREATE TABLE roadmaps (
   title       text NOT NULL,
   summary     text,
   position    int  NOT NULL,
-  updated_at  timestamptz NOT NULL DEFAULT now()
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  archived_at timestamptz
 );
 
 CREATE TABLE parts (
@@ -142,7 +145,7 @@ CREATE TABLE resources (
 );
 ```
 
-Groups and items are never hard-deleted by the sync while user data references them; removed items get `archived_at`, and the sync re-parents or keeps their group row.
+`roadmaps`, `parts`, `tracks` and `groups` also have an `archived_at` column; the sync never hard-deletes content rows. User tables reference `items(id)` with `ON UPDATE CASCADE`, which is how renames carry user data.
 
 ### Users and auth
 
@@ -214,7 +217,7 @@ CREATE INDEX activity_user_time ON activity_events (user_id, created_at DESC);
 
 - `item_completions` enforces "a first completion counts once" with its primary key: the insert uses `ON CONFLICT DO NOTHING`.
 - `activity_events` is the full history, including unmarks and resource opens; `item_completions` is only for streaks and the heatmap.
-- When the sync renames an item ID (`content/renames.txt`), it updates `item_id` in all four user tables in one transaction.
+- A rename changes `items.id`, and `ON UPDATE CASCADE` moves user rows with it. If the new ID already exists (content synced before the rename was recorded), the sync moves user rows across where they don't collide.
 
 ## API
 
@@ -267,11 +270,11 @@ Errors are returned as `{ ok: false, error: { code, message } }`, with `code` on
 
 ### Rate limits
 
-Writes are limited per user to about 60 requests a minute (`RATE_LIMITED` beyond that). Resource redirects are not limited.
+Writes are limited per user to 60 a minute (`RATE_LIMITED` beyond that), counted from the user's `activity_events` in the last 60 seconds, so no extra store is needed. Resource redirects are not limited.
 
 ## Reads and caching
 
-- **Content pages are static.** Roadmap and track pages render at build or sync time and are served from the CDN; they change only when content syncs.
+- **Content pages are cached.** Roadmap and track pages render on first request and are served from the cache (revalidated every 5 minutes); they read no session, so every visitor gets the same page. The header loads the session on the client.
 - **Progress is one small query per page:** `getRoadmapProgress` joins `user_item_progress` to `items` on `roadmap_id`, skipping archived items. The client merges the result into the static content tree.
 - Ticking an item updates the UI immediately (optimistic update), then saves through `setItemDone`.
 - Progress percentages per track and roadmap are computed from that query. Precomputed counters can be added if it ever gets slow.
@@ -326,6 +329,8 @@ src/
 ```
 
 ## Build order
+
+All steps below are implemented.
 
 1. This document.
 2. Scaffold: Next.js, Tailwind, shadcn/ui, Drizzle, lint and format, CI.

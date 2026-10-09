@@ -3,6 +3,30 @@ System Design roadmap with a tracker , to continue with my study arc , divided a
 
 See [docs/architecture.md](docs/architecture.md) for how the tracker app is designed.
 
+## Running the app
+
+Requires Node 22 and Docker (or any PostgreSQL 16).
+
+```bash
+cp .env.example .env.local      # then fill in AUTH_SECRET and the OAuth app IDs and secrets
+docker compose up -d            # local Postgres
+npm install
+export DATABASE_URL=postgres://roadmap:roadmap@localhost:5432/roadmap
+npm run db:migrate              # create tables
+npm run content:sync            # load content/ into the database
+npm run dev                     # http://localhost:3000
+```
+
+| Command | What it does |
+|---|---|
+| `npm run content:check` | Validates every file in `content/` (also runs in CI) |
+| `npm run content:sync` | Upserts content into the database; safe to run on every deploy |
+| `npm test` | Unit and database tests; needs `TEST_DATABASE_URL` pointing at an empty test database |
+| `npm run lint`, `npm run typecheck`, `npm run format:check` | Static checks |
+| `npm run db:generate` | Creates a migration after changing `src/db/schema.ts` |
+
+OAuth callback URLs are `<site>/api/auth/callback/google` and `<site>/api/auth/callback/github`.
+
 ## Curricula
 
 - [System Design](content/system-design/roadmap.md) — core concepts, distributed systems, LLD, HLD, interview prep
