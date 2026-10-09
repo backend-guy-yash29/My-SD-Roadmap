@@ -1,6 +1,6 @@
 # Deep Learning
 
-> From a single neuron to modern LLMs: build neural networks from scratch, train them well, then move through CNNs, sequence models and Transformers to LLMs.
+> From a single neuron to modern LLMs: build neural networks from scratch, train them well on GPUs, move through CNNs, sequence models, Transformers and generative models to LLMs, then prepare for interviews.
 
 ## Neural Network Foundations
 
@@ -8,15 +8,21 @@
 - 02-backpropagation
 - 03-optimizers
 - 04-training-deep-networks
+- 05-pytorch-and-gpus
 
 ## Deep Architectures
 
-- 05-convolutional-neural-networks
-- 06-sequence-models
-- 07-attention-and-transformers
+- 06-convolutional-neural-networks
+- 07-sequence-models
+- 08-attention-and-transformers
+- 09-generative-models
 
 ## Large Language Models
 
-- 08-llm-internals
-- 09-model-optimisation
-- 10-fine-tuning-and-alignment
+- 10-llm-internals
+- 11-model-optimisation
+- 12-fine-tuning-and-alignment
+
+## Interview Prep
+
+- 13-interview-prep

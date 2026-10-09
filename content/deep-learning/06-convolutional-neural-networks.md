@@ -30,6 +30,12 @@
 - Transfer Learning: Fine-Tuning vs Feature Extraction
 - Functional API for Non-Linear Architectures
 
+## Beyond Classification
+
+- Object Detection (R-CNN Family, YOLO)
+- Image Segmentation (U-Net)
+- Receptive Field
+
 ## Projects
 
 - [exercise] Cat vs Dog Image Classifier

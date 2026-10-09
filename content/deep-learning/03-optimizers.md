@@ -8,6 +8,8 @@
 - Batch vs Stochastic vs Mini-Batch Gradient Descent
 - Learning Rate
 - Learning Rate Decay and Schedules
+- Learning Rate Warmup and Cosine Schedules
+- Saddle Points, Local Minima and Loss Landscapes
 
 ## Momentum-Based Optimizers
 
@@ -20,6 +22,7 @@
 - AdaGrad
 - RMSProp
 - Adam
+- Adam Bias Correction
 - AdamW and Decoupled Weight Decay
 
 ## Projects

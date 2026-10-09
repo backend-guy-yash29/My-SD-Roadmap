@@ -8,6 +8,7 @@
 - Encoder-Decoder (Seq2Seq) Architecture
 - The Attention Mechanism
 - Bahdanau vs Luong Attention
+- Greedy Decoding vs Beam Search
 
 ## Self-Attention
 
@@ -20,6 +21,7 @@
 - Multi-Head Attention
 - Positional Encoding (Sinusoidal, RoPE)
 - Layer Normalization vs Batch Normalization
+- Residual Connections and Pre-Norm vs Post-Norm
 
 ## The Transformer Architecture
 
@@ -34,6 +36,8 @@
 - Encoder-Only Models (BERT)
 - Decoder-Only Models (GPT)
 - Encoder-Decoder Models (T5)
+- Vision Transformer (ViT)
+- Efficient Attention (Sparse, Linear, Sliding Window)
 
 ## Projects
 

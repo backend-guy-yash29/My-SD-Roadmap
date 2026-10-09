@@ -21,6 +21,7 @@
 - Gated Recurrent Unit (GRU)
 - Stacked (Deep) RNNs, LSTMs and GRUs
 - Bidirectional RNNs and LSTMs
+- Teacher Forcing
 
 ## Projects
 

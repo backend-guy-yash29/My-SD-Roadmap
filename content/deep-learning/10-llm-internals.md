@@ -9,6 +9,13 @@
 - Scaling Laws
 - Mixture of Experts (MoE)
 
+## Modern LLM Architecture
+
+- RMSNorm and SwiGLU in Modern LLMs
+- Multi-Query and Grouped-Query Attention (MQA, GQA)
+- Long-Context Extension
+- Multimodal LLMs (Vision-Language Models)
+
 ## Tokens & Context
 
 - Tokens
@@ -29,3 +36,4 @@
 - Structured Outputs and Constrained Decoding
 - Test-Time Compute and Reasoning Models
 - The Probabilistic Nature of LLM Output
+- In-Context Learning and Chain-of-Thought

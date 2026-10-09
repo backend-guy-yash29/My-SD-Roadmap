@@ -12,14 +12,16 @@
 ## Regularization
 
 - L1 and L2 Regularization (Weight Decay)
-- Dropout
+- Dropout (and Inverted Dropout at Inference)
+- Label Smoothing
 
 ## Stable Training
 
 - Feature Scaling for Neural Networks
 - Weight Initialization: What Not to Do
 - Xavier/Glorot and He Initialization
-- Batch Normalization
+- Batch Normalization (Training vs Inference Behaviour)
+- Layer Norm, RMSNorm and Group Norm
 
 ## Tuning
 
