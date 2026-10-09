@@ -14,10 +14,7 @@ export default async function SignInPage({ searchParams }: Props) {
   const redirectTo = safePath((await searchParams).callbackUrl);
   if (await auth()) redirect(redirectTo);
 
-  const providers = [
-    { id: "google", label: "Continue with Google" },
-    { id: "github", label: "Continue with GitHub" },
-  ];
+  const providers = [{ id: "google", label: "Continue with Google" }];
   return (
     <div className="mx-auto max-w-sm space-y-6 pt-8">
       <div className="space-y-1 text-center">

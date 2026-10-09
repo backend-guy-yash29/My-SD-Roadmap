@@ -16,7 +16,7 @@ A multi-user study tracker in the style of Striver's A2Z sheet or AlgoMaster: si
 | Framework | Next.js (App Router, TypeScript): pages, server components and API in one codebase |
 | Database | PostgreSQL: Neon in production and previews, Docker locally |
 | ORM and migrations | Drizzle |
-| Auth | Auth.js with Google and GitHub OAuth, sessions stored in Postgres |
+| Auth | Auth.js with Google OAuth, sessions stored in Postgres |
 | UI | Tailwind CSS + shadcn/ui |
 | Content validation | Zod, run by the sync script and in CI |
 | Hosting | Vercel, with a preview deployment per pull request |
@@ -286,7 +286,7 @@ Writes are limited per user to 60 a minute (`RATE_LIMITED` beyond that), counted
 | `/` | Dashboard: every roadmap with a progress bar, current streak, "continue where you left off" |
 | `/[roadmap]` | Parts as section headers, tracks as cards with progress bars |
 | `/[roadmap]/[track]` | Groups as collapsible blocks; items as rows with a done checkbox, type badge, note button and resources |
-| `/sign-in` | Google and GitHub sign-in |
+| `/sign-in` | Google sign-in |
 | `/u/[username]` | Public profile: progress per roadmap, streaks and heatmap (only if the owner made it public) |
 | `/settings` | Username, name, timezone, profile visibility |
 
@@ -301,7 +301,7 @@ Content pages are public; signing in unlocks tracking and notes.
 
 ## Auth
 
-- Auth.js runs inside the app, with Google and GitHub providers. Google and GitHub verify the user; the app never stores passwords.
+- Auth.js runs inside the app with the Google provider. Google verifies the user; the app never stores passwords. More providers (e.g. GitHub) can be added later in `src/auth.ts` without schema changes.
 - Users, linked accounts and sessions live in the same Postgres, so progress joins directly to `users`.
 - Server code reads the current user with `auth()`; writes reject requests without a session.
 

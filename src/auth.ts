@@ -1,7 +1,6 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { cookies } from "next/headers";
 import { db } from "@/db";
@@ -18,7 +17,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  providers: [Google, GitHub],
+  providers: [Google],
   session: { strategy: "database" },
   pages: { signIn: "/sign-in" },
   callbacks: {

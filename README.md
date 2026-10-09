@@ -8,7 +8,7 @@ See [docs/architecture.md](docs/architecture.md) for how the tracker app is desi
 Requires Node 22 and Docker (or any PostgreSQL 16).
 
 ```bash
-cp .env.example .env.local      # then fill in AUTH_SECRET and the OAuth app IDs and secrets
+cp .env.example .env.local      # then fill in AUTH_SECRET and the Google OAuth client ID and secret
 docker compose up -d            # local Postgres
 npm install
 export DATABASE_URL=postgres://roadmap:roadmap@localhost:5432/roadmap
@@ -25,7 +25,7 @@ npm run dev                     # http://localhost:3000
 | `npm run lint`, `npm run typecheck`, `npm run format:check` | Static checks |
 | `npm run db:generate` | Creates a migration after changing `src/db/schema.ts` |
 
-OAuth callback URLs are `<site>/api/auth/callback/google` and `<site>/api/auth/callback/github`.
+The Google OAuth redirect URI is `<site>/api/auth/callback/google`.
 
 ## Curricula
 
