@@ -14,7 +14,7 @@
 | — | AI System Design Case Studies | AI |
 | — | Miscellaneous | Extra |
 
-> Core System Design lives in [system-design.md](system-design.md).
+> Core System Design lives in [content/system-design](content/system-design/roadmap.md).
 
 ---
 
