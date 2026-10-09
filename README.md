@@ -7,7 +7,7 @@ System Design roadmap with a tracker , to continue with my study arc , divided a
 - AI-ML, split into four roadmaps:
   - ML Foundations — core ML algorithms and optimizers (planned; seed list in [ai-ml.md](ai-ml.md))
   - [Deep Learning](content/deep-learning/roadmap.md) — neural networks from scratch, optimizers, CNNs, RNNs, Transformers and LLMs
-  - [RAG & Context Engineering](content/rag-context-engineering/roadmap.md) — retrieval, context, memory, agents (partial)
+  - [RAG & Context Engineering](content/rag-context-engineering/roadmap.md) — context engineering, RAG in depth, tools and MCP, memory, agents, capstone projects
   - [ML & AI System Design](content/ml-ai-system-design/roadmap.md) — ML systems, recommendations, LLM serving, production RAG and agents, evals
 
 ## Content layout
