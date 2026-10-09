@@ -14,15 +14,16 @@
 
 - 06-convolutional-neural-networks
 - 07-sequence-models
-- 08-attention-and-transformers
-- 09-generative-models
+- 08-attention-mechanisms
+- 09-transformer-architecture
+- 10-generative-models
 
 ## Large Language Models
 
-- 10-llm-internals
-- 11-model-optimisation
-- 12-fine-tuning-and-alignment
+- 11-llm-internals
+- 12-model-optimisation
+- 13-fine-tuning-and-alignment
 
 ## Interview Prep
 
-- 13-interview-prep
+- 14-interview-prep

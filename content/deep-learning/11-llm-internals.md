@@ -1,10 +1,9 @@
 # LLM Internals
 
-> How a decoder-only Transformer becomes an LLM: pretraining, tokens, and generating output one token at a time.
+> How a decoder-only Transformer becomes an LLM: pretraining at scale, modern architecture choices, and generating output one token at a time.
 
 ## Pretraining
 
-- Next-Token Prediction as a Training Objective
 - Pretraining Data
 - Scaling Laws
 - Mixture of Experts (MoE)
@@ -16,10 +15,8 @@
 - Long-Context Extension
 - Multimodal LLMs (Vision-Language Models)
 
-## Tokens & Context
+## Context
 
-- Tokens
-- Tokenization (BPE)
 - Context Windows
 - Prompt vs Completion
 
