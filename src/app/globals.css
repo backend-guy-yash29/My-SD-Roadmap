@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --bg: #fcfcfb;
+  --surface: #ffffff;
+  --surface-2: #f4f3f0;
+  --border: #e4e2dd;
+  --ink: #1d1d1b;
+  --ink-2: #55554f;
+  --ink-3: #7c7b74;
+  --accent: #256abf;
+  --accent-ink: #ffffff;
+  --accent-soft: #e6effb;
+  --done: #0ca30c;
+  /* Heatmap: one blue ramp, light -> dark = fewer -> more */
+  --heat-0: #ebeae6;
+  --heat-1: #b7d3f6;
+  --heat-2: #6da7ec;
+  --heat-3: #2a78d6;
+  --heat-4: #184f95;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413;
+    --surface: #1a1a19;
+    --surface-2: #232321;
+    --border: #33332f;
+    --ink: #f1f0ec;
+    --ink-2: #bdbcb5;
+    --ink-3: #8f8e87;
+    --accent: #5598e7;
+    --accent-ink: #0d1a2b;
+    --accent-soft: #16263b;
+    --done: #3cc23c;
+    --heat-0: #2a2a28;
+    --heat-1: #104281;
+    --heat-2: #1c5cab;
+    --heat-3: #3987e5;
+    --heat-4: #9ec5f4;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #141413;
+  --surface: #1a1a19;
+  --surface-2: #232321;
+  --border: #33332f;
+  --ink: #f1f0ec;
+  --ink-2: #bdbcb5;
+  --ink-3: #8f8e87;
+  --accent: #5598e7;
+  --accent-ink: #0d1a2b;
+  --accent-soft: #16263b;
+  --done: #3cc23c;
+  --heat-0: #2a2a28;
+  --heat-1: #104281;
+  --heat-2: #1c5cab;
+  --heat-3: #3987e5;
+  --heat-4: #9ec5f4;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-done: var(--done);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
