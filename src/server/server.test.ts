@@ -44,7 +44,17 @@ async function expectCode(p: Promise<unknown>, code: string) {
 describe("content reads", () => {
   it("lists roadmaps with counts", async () => {
     expect(await listRoadmaps(db)).toEqual([
-      { id: "demo", title: "Demo", summary: "A demo roadmap.", trackCount: 2, itemCount: 4 },
+      {
+        id: "demo",
+        title: "Demo",
+        summary: "A demo roadmap.",
+        menu: null,
+        menuNote: null,
+        category: null,
+        tagline: null,
+        trackCount: 2,
+        itemCount: 4,
+      },
     ]);
   });
   it("returns the roadmap tree and a track with resources", async () => {
@@ -62,6 +72,10 @@ describe("content reads", () => {
       {
         id: "demo",
         title: "Demo",
+        menu: null,
+        menuNote: null,
+        category: null,
+        tagline: null,
         parts: [
           {
             id: "demo/basics",

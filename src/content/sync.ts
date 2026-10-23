@@ -89,6 +89,10 @@ export async function syncContent(db: Db, content: Content): Promise<SyncReport>
       title: roadmaps.title,
       summary: roadmaps.summary,
       position: roadmaps.position,
+      menu: roadmaps.menu,
+      menuNote: roadmaps.menuNote,
+      category: roadmaps.category,
+      tagline: roadmaps.tagline,
       updatedAt: roadmaps.updatedAt,
       archivedAt: roadmaps.archivedAt,
     });
