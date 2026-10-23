@@ -6,7 +6,7 @@ import { parseContent } from "@/content/parse";
 import { syncContent } from "@/content/sync";
 import { basicContent, contentDir } from "@/test/fixtures";
 import { testDb } from "@/test/db";
-import { getRoadmap, getTrack, listRoadmaps } from "./content";
+import { getNavigation, getRoadmap, getTrack, listRoadmaps } from "./content";
 import { AppError } from "./errors";
 import { getNote, saveNote } from "./notes";
 import { generateUsername, getMyProfile, getPublicProfile, updateProfile } from "./profile";
@@ -54,6 +54,24 @@ describe("content reads", () => {
     const track = await getTrack(db, "demo/first");
     expect(track.groups[0].items[0].resources.map((r) => r.source)).toEqual(["Src", "Other Src"]);
     await expectCode(getTrack(db, "demo/nope"), "NOT_FOUND");
+  });
+  it("returns navigation with tracks numbered across parts", async () => {
+    expect(await getNavigation(db)).toEqual([
+      {
+        id: "demo",
+        title: "Demo",
+        parts: [
+          {
+            id: "demo/basics",
+            title: "Basics",
+            tracks: [
+              { id: "demo/first", number: 1, title: "First Track", itemCount: 3 },
+              { id: "demo/second", number: 2, title: "Second Track", itemCount: 1 },
+            ],
+          },
+        ],
+      },
+    ]);
   });
 });
 

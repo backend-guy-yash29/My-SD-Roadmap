@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
-import { RoadmapProgressProvider } from "@/components/roadmap-progress";
-import { TrackItems } from "@/components/track-items";
+import { PageHeader } from "@/components/page-header";
+import { WithRail } from "@/components/study-rail";
+import { TrackMain, TrackRail } from "@/components/track-items";
 import { getRoadmap, getTrack } from "@/server/content";
 import { AppError } from "@/server/errors";
 
@@ -42,31 +43,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TrackPage({ params }: Props) {
   const p = await params;
   const { roadmap, track } = await load(p.roadmap, p.track);
-  const all = roadmap.parts.flatMap((part) => part.tracks);
+  const all = roadmap.parts.flatMap((part) => part.tracks.map((t) => ({ ...t, part: part.title })));
   const index = all.findIndex((t) => t.id === track.id);
+  const part = all[index]?.part ?? "";
   const prev = all[index - 1];
   const next = all[index + 1];
 
   return (
-    <RoadmapProgressProvider roadmapId={roadmap.id}>
-      <nav className="mb-4 text-sm text-ink-3">
-        <Link href={`/${roadmap.id}`} className="hover:text-accent">
-          {roadmap.title}
-        </Link>{" "}
-        / Track {index + 1}
-      </nav>
-      <header className="mb-6 space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">{track.title}</h1>
-        {track.summary && <p className="max-w-3xl text-ink-2">{track.summary}</p>}
-      </header>
-      <TrackItems track={track} />
-      <nav className="mt-8 flex justify-between gap-4 text-sm">
+    <WithRail rail={<TrackRail track={track} />}>
+      <PageHeader crumbs={[{ label: roadmap.title, href: `/${roadmap.id}` }, { label: part }]} />
+      <TrackMain
+        track={track}
+        eyebrow={`TRACK ${String(index + 1).padStart(2, "0")} · ${part.toUpperCase()}`}
+      />
+      <nav className="mt-8 flex justify-between gap-4" aria-label="Track navigation">
         {prev ? (
           <Link
             href={`/${prev.id}`}
-            className="rounded-md border border-border px-3 py-2 hover:border-accent"
+            className="rounded-xl border border-border bg-surface px-4 py-3 hover:border-accent"
           >
-            ← {prev.title}
+            <span className="block text-xs text-ink-3">← Previous</span>
+            <span className="font-medium">{prev.title}</span>
           </Link>
         ) : (
           <span />
@@ -74,12 +71,13 @@ export default async function TrackPage({ params }: Props) {
         {next && (
           <Link
             href={`/${next.id}`}
-            className="rounded-md border border-border px-3 py-2 text-right hover:border-accent"
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-right hover:border-accent"
           >
-            {next.title} →
+            <span className="block text-xs text-ink-3">Next →</span>
+            <span className="font-medium">{next.title}</span>
           </Link>
         )}
       </nav>
-    </RoadmapProgressProvider>
+    </WithRail>
   );
 }

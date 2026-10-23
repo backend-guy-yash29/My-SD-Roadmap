@@ -39,7 +39,7 @@ export function NoteEditor({
   }
 
   return (
-    <div className="mt-2 rounded-md border border-border bg-surface-2 p-2">
+    <div className="mt-2 rounded-[10px] border border-border bg-surface-2 p-2.5">
       <textarea
         value={body}
         onChange={(e) => {
@@ -51,7 +51,7 @@ export function NoteEditor({
         rows={4}
         placeholder={loaded ? "Plain-text notes for this item" : "Loading…"}
         aria-label={`Note for ${itemTitle}`}
-        className="w-full resize-y rounded-md border border-border bg-surface p-2 text-sm outline-none focus:border-accent"
+        className="w-full resize-y rounded-lg border border-border bg-surface p-2 text-sm outline-none focus:border-accent"
       />
       <div className="mt-1 flex items-center justify-between gap-2 text-xs text-ink-3">
         <span className="tabular-nums">
@@ -59,12 +59,12 @@ export function NoteEditor({
         </span>
         <span className="flex items-center gap-2">
           {status === "saved" && <span className="text-done">Saved</span>}
-          {status === "error" && <span className="text-red-600">{message}</span>}
+          {status === "error" && <span className="text-danger">{message}</span>}
           <button
             type="button"
             onClick={save}
             disabled={!loaded || status === "saving"}
-            className="rounded-md bg-accent px-3 py-1 font-medium text-accent-ink disabled:opacity-50"
+            className="rounded-lg bg-accent px-3 py-1 font-medium text-accent-ink disabled:opacity-50"
           >
             {status === "saving" ? "Saving…" : body.trim() ? "Save note" : "Delete note"}
           </button>

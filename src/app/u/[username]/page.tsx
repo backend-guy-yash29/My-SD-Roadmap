@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { StudyHeatmap } from "@/components/heatmap";
+import { Card, PageHeader, PageMain } from "@/components/page-header";
 import { ProgressBar } from "@/components/progress-bar";
 import { AppError } from "@/server/errors";
 import { getPublicProfile } from "@/server/profile";
@@ -27,47 +28,58 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProfilePage({ params }: Props) {
   const profile = await load((await params).username);
   return (
-    <div className="space-y-8">
+    <PageMain>
+      <PageHeader crumbs={[{ label: "Profiles" }, { label: `@${profile.username}` }]} />
       {!profile.isPublic && (
-        <p className="rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-ink-2">
+        <p className="mt-5 rounded-[10px] border border-border bg-surface-2 px-4 py-2.5 text-ink-2">
           Only you can see this page. Make your profile public in Settings to share it.
         </p>
       )}
-      <header className="flex items-center gap-4">
-        {profile.image && (
+      <section className="hero-glow mb-4 mt-5 flex items-center gap-5 rounded-2xl border border-border bg-surface px-6 py-6 shadow-card">
+        {profile.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.image} alt="" className="h-16 w-16 rounded-full" />
+          <img src={profile.image} alt="" className="relative h-16 w-16 rounded-full" />
+        ) : (
+          <span className="relative grid h-16 w-16 place-items-center rounded-full bg-accent-soft text-2xl font-bold text-accent">
+            {(profile.name ?? profile.username).slice(0, 1)}
+          </span>
         )}
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+        <div className="relative">
+          <h1 className="text-[26px] font-bold tracking-tight">
             {profile.name ?? profile.username}
           </h1>
-          <p className="text-sm text-ink-3">@{profile.username}</p>
-        </div>
-      </header>
-      <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <p className="text-xs text-ink-3">Current streak</p>
-          <p className="mt-1 text-3xl font-semibold tabular-nums">{profile.currentStreak}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-surface p-4">
-          <p className="text-xs text-ink-3">Longest streak</p>
-          <p className="mt-1 text-3xl font-semibold tabular-nums">{profile.longestStreak}</p>
+          <p className="font-mono text-xs text-ink-3">@{profile.username}</p>
         </div>
       </section>
-      <section className="rounded-lg border border-border bg-surface p-4">
-        <h2 className="mb-3 font-semibold">Activity</h2>
-        <StudyHeatmap heatmap={profile.heatmap} />
-      </section>
-      <section className="space-y-3">
-        <h2 className="font-semibold">Progress</h2>
-        {profile.roadmaps.map((r) => (
-          <div key={r.id} className="rounded-lg border border-border bg-surface p-4">
-            <p className="mb-2 font-medium">{r.title}</p>
-            <ProgressBar done={r.done} total={r.total} label={`${r.title} progress`} />
-          </div>
+      <section className="mb-4 grid gap-4 sm:grid-cols-2">
+        {[
+          ["Current streak", profile.currentStreak],
+          ["Longest streak", profile.longestStreak],
+        ].map(([label, value]) => (
+          <Card key={label} className="!p-4">
+            <p className="text-[13px] font-semibold text-ink-2">{label}</p>
+            <p className="mt-1 flex items-baseline gap-1.5">
+              <b className="text-[34px] font-bold leading-none tracking-tight">{value}</b>
+              <span className="text-ink-2">{value === 1 ? "day" : "days"}</span>
+            </p>
+          </Card>
         ))}
       </section>
-    </div>
+      <Card className="mb-7">
+        <h2 className="mb-3 text-[15px] font-semibold">Activity</h2>
+        <StudyHeatmap heatmap={profile.heatmap} />
+      </Card>
+      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+        Progress
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {profile.roadmaps.map((r) => (
+          <Card key={r.id} className="!p-4">
+            <p className="mb-2.5 font-semibold">{r.title}</p>
+            <ProgressBar done={r.done} total={r.total} label={`${r.title} progress`} gradient />
+          </Card>
+        ))}
+      </div>
+    </PageMain>
   );
 }
