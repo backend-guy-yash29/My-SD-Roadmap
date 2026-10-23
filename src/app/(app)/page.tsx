@@ -1,35 +1,32 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { ExploreRoadmaps } from "@/components/explore";
 import { StudyHeatmap } from "@/components/heatmap";
-import {
-  ContinueCard,
-  HomeCard,
-  MilestonesCard,
-  NotesCard,
-  ResourcesCard,
-  SuggestionCard,
-  SummaryRow,
-} from "@/components/home-cards";
-import { PageHeader, PageMain } from "@/components/page-header";
-import { listRoadmaps } from "@/server/content";
-import { getHome } from "@/server/home";
-import { getDashboard } from "@/server/progress";
+import { Card, PageHeader, PageMain } from "@/components/page-header";
+import { listRecentNotes } from "@/server/notes";
+import { getStudyStats } from "@/server/progress";
 
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ tab?: string }> };
+const NOTE_PREVIEW = 280;
 
-export default async function Home({ searchParams }: Props) {
-  const [session, roadmaps, { tab }] = await Promise.all([auth(), listRoadmaps(db), searchParams]);
+function when(date: Date, now: Date) {
+  const days = Math.floor((now.getTime() - date.getTime()) / 86_400_000);
+  if (days < 1) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+export default async function Home() {
+  const session = await auth();
   const userId = session?.user?.id;
 
   if (!userId) {
     return (
       <PageMain>
         <PageHeader crumbs={[{ label: "Dashboard" }]} />
-        <section className="hero-glow mb-2 mt-5 rounded-2xl border border-border bg-surface px-6 py-8 shadow-card md:px-8">
+        <section className="hero-glow mt-5 rounded-2xl border border-border bg-surface px-6 py-8 shadow-card md:px-8">
           <p className="relative font-mono text-xs tracking-[0.04em] text-accent">
             STRUCTURED STUDY ROADMAPS
           </p>
@@ -37,8 +34,8 @@ export default async function Home({ searchParams }: Props) {
             Maths, programming, ML, AI engineering and system design, one topic at a time.
           </h1>
           <p className="relative max-w-[600px] text-ink-2">
-            {roadmaps.length} roadmaps broken into tracks you can tick off, with links to the exact
-            lesson or video for each topic, notes, and a daily streak.
+            Pick a roadmap from the menu to start. Sign in to tick off topics, keep notes and build
+            a daily streak.
           </p>
           <Link
             href="/sign-in"
@@ -47,55 +44,56 @@ export default async function Home({ searchParams }: Props) {
             Sign in to track progress
           </Link>
         </section>
-        <ExploreRoadmaps roadmaps={roadmaps} tab={tab} signedIn={false} />
       </PageMain>
     );
   }
 
   const now = new Date();
-  const [dash, home] = await Promise.all([getDashboard(db, userId, now), getHome(db, userId, now)]);
-  const progress = new Map(dash.roadmaps.map((r) => [r.id, r]));
-  const enrolled = dash.roadmaps.filter((r) => r.enrolled).length;
+  const [stats, notes] = await Promise.all([
+    getStudyStats(db, userId, now),
+    listRecentNotes(db, userId),
+  ]);
   const firstName = session.user?.name?.split(" ")[0];
 
   return (
     <PageMain>
       <PageHeader crumbs={[{ label: "Dashboard" }]} />
-      <h1 className="mt-5 text-[1.625rem] font-bold tracking-tight md:text-[1.875rem]">
-        Welcome {enrolled ? "back" : ""}
-        {firstName ? `, ${firstName}` : ""}
+      <h1 className="mb-5 mt-5 text-[1.625rem] font-bold tracking-tight md:text-[1.875rem]">
+        Welcome back{firstName ? `, ${firstName}` : ""}
       </h1>
-      <p className="mb-5 text-ink-2">
-        {enrolled
-          ? `${enrolled} ${enrolled === 1 ? "roadmap" : "roadmaps"} in progress`
-          : "Enroll in a roadmap below to start. Your progress, streak and notes will show up here."}
-      </p>
 
-      {enrolled > 0 && (
-        <>
-          <SummaryRow
-            home={home}
-            currentStreak={dash.currentStreak}
-            longestStreak={dash.longestStreak}
-          />
-          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-            <ContinueCard home={home} />
-            <HomeCard title="Activity">
-              <StudyHeatmap heatmap={dash.heatmap} />
-            </HomeCard>
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
-            <NotesCard home={home} now={now} />
-            <MilestonesCard home={home} />
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
-            <ResourcesCard home={home} now={now} />
-            <SuggestionCard home={home} />
-          </div>
-        </>
+      <Card>
+        <h2 className="mb-3 text-[0.9375rem] font-semibold">Activity</h2>
+        <StudyHeatmap heatmap={stats.heatmap} />
+      </Card>
+
+      {notes.length > 0 && (
+        <Card className="mt-5">
+          <h2 className="mb-1 text-[0.9375rem] font-semibold">Notes</h2>
+          <ul className="divide-y divide-border">
+            {notes.map((n) => (
+              <li key={n.itemId} className="py-3.5 last:pb-0">
+                <Link href={`/${n.trackId}`} className="group block">
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <b className="font-semibold text-heading group-hover:text-accent">
+                      {n.itemTitle}
+                    </b>
+                    <span className="text-xs text-ink-3">
+                      {n.roadmapTitle} · {n.trackTitle}
+                    </span>
+                    <span className="ml-auto text-xs text-ink-3">{when(n.updatedAt, now)}</span>
+                  </span>
+                  <span className="mt-1 block whitespace-pre-line text-sm text-ink-2">
+                    {n.body.length > NOTE_PREVIEW
+                      ? `${n.body.slice(0, NOTE_PREVIEW).trimEnd()}…`
+                      : n.body}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
-
-      <ExploreRoadmaps roadmaps={roadmaps} progress={progress} tab={tab} signedIn />
     </PageMain>
   );
 }
