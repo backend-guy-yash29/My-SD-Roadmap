@@ -5,7 +5,8 @@
 - java
 - ml-maths
 - ml-foundations
-- numpy-pandas-fastapi
+- numpy-pandas
+- fastapi
 - deep-learning
 - rag-context-engineering
 - langchain-langgraph

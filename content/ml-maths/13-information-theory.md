@@ -4,8 +4,9 @@
 
 ## Information Theory
 
+- Information and Surprise
 - Entropy
 - Cross-Entropy
 - KL Divergence
-- Information Gain
+- Mutual Information and Information Gain
 - Perplexity
