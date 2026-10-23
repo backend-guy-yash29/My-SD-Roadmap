@@ -30,6 +30,10 @@ export async function listRoadmaps(db: Db) {
     id: r.id,
     title: r.title,
     summary: r.summary,
+    menu: r.menu,
+    menuNote: r.menuNote,
+    category: r.category,
+    tagline: r.tagline,
     trackCount: ts.filter((t) => t.roadmapId === r.id).length,
     itemCount: counts.filter((c) => c.roadmapId === r.id).reduce((n, c) => n + c.n, 0),
   }));
@@ -145,6 +149,10 @@ export async function getNavigation(db: Db) {
     return {
       id: r.id,
       title: r.title,
+      menu: r.menu,
+      menuNote: r.menuNote,
+      category: r.category,
+      tagline: r.tagline,
       parts: ps
         .filter((p) => p.roadmapId === r.id)
         .map((p) => ({

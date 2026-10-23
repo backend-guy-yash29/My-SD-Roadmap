@@ -139,28 +139,8 @@ function RoadmapNav({ nav, currentId }: { nav: Navigation; currentId: string | n
     if (currentId) setExpanded((cur) => (cur.has(currentId) ? cur : new Set(cur).add(currentId)));
   }, [currentId]);
 
-  // Signed in: enrolled roadmaps (plus the one being viewed). Signed out, or none enrolled: all of them.
-  const filtered = ids !== null && ids.length > 0;
-  const shown = !loaded
-    ? nav.filter((r) => r.id === currentId)
-    : filtered
-      ? nav.filter((r) => ids.includes(r.id))
-      : nav;
-  // A roadmap being viewed without enrolling gets its own heading below the enrolled ones.
-  const viewing =
-    filtered && currentId && !ids.includes(currentId)
-      ? nav.find((r) => r.id === currentId)
-      : undefined;
-  const entry = (r: Navigation[number]) => (
-    <RoadmapEntry
-      key={r.id}
-      roadmap={r}
-      current={r.id === currentId}
-      expanded={expanded.has(r.id)}
-      onToggle={() => toggle(r.id)}
-    />
-  );
-
+  // Only the user's own roadmaps; everything else is found through the top bar or Explore.
+  const mine = ids ? nav.filter((r) => ids.includes(r.id)) : [];
   const toggle = (id: string) =>
     setExpanded((cur) => {
       const next = new Set(cur);
@@ -169,35 +149,45 @@ function RoadmapNav({ nav, currentId }: { nav: Navigation; currentId: string | n
       return next;
     });
 
+  const link = (href: string, icon: string, label: string, active: boolean) => (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`flex items-center gap-2.5 rounded-lg px-2 py-[7px] text-sm ${active ? "bg-accent-soft font-semibold text-accent" : "text-ink-2 hover:bg-surface-2 hover:text-ink"}`}
+    >
+      <span className="w-4 text-center" aria-hidden>
+        {icon}
+      </span>
+      {label}
+    </Link>
+  );
+
   return (
     <nav aria-label="Roadmaps">
-      <Link
-        href="/"
-        aria-current={pathname === "/" ? "page" : undefined}
-        className={`mb-3 flex items-center gap-2.5 rounded-lg px-2 py-[7px] text-sm ${pathname === "/" ? "bg-accent-soft font-semibold text-accent" : "text-ink-2 hover:bg-surface-2 hover:text-ink"}`}
-      >
-        <span className="w-4 text-center">⌂</span>
-        Dashboard
-      </Link>
-      <p className="mx-2 mb-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
-        {filtered ? "My roadmaps" : "Roadmaps"}
+      {link("/", "⌂", "Dashboard", pathname === "/")}
+      {link("/#explore", "◎", "Explore roadmaps", false)}
+      <p className="mx-2 mb-1.5 mt-4 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
+        My roadmaps
       </p>
-      {shown.map(entry)}
-      {viewing && (
-        <>
-          <p className="mx-2 mb-1.5 mt-4 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
-            Viewing · not enrolled
-          </p>
-          {entry(viewing)}
-        </>
-      )}
-      {filtered && shown.length < nav.length && (
-        <Link
-          href="/?tab=available"
-          className="mt-2 block rounded-lg px-2 py-[7px] text-[0.8125rem] text-accent hover:bg-surface-2"
-        >
-          Browse all roadmaps →
-        </Link>
+      {!loaded ? null : mine.length ? (
+        mine.map((r) => (
+          <RoadmapEntry
+            key={r.id}
+            roadmap={r}
+            current={r.id === currentId}
+            expanded={expanded.has(r.id)}
+            onToggle={() => toggle(r.id)}
+          />
+        ))
+      ) : (
+        <p className="mx-1 rounded-xl border border-dashed border-border-2 p-3.5 text-[0.8125rem] text-ink-3">
+          {ids
+            ? "You haven't enrolled in a roadmap yet."
+            : "Sign in to build your list of roadmaps."}{" "}
+          <Link href="/#explore" className="font-semibold text-accent hover:underline">
+            Explore roadmaps →
+          </Link>
+        </p>
       )}
     </nav>
   );

@@ -24,13 +24,39 @@ describe("parseContent", () => {
   it("parses the real content directory", () => {
     const content = parseContent(join(process.cwd(), "content"));
     expect(content.roadmaps.map((r) => r.id)).toEqual([
-      "system-design",
+      "ml-maths",
+      "python",
+      "java",
       "ml-foundations",
+      "numpy-pandas",
       "deep-learning",
+      "fastapi",
       "rag-context-engineering",
+      "langchain-langgraph",
+      "system-design",
       "ml-ai-system-design",
     ]);
-    expect(flatten(content).items.length).toBeGreaterThan(1000);
+    expect(content.roadmaps.every((r) => r.menu && r.category && r.tagline)).toBe(true);
+    expect(flatten(content).items.length).toBeGreaterThan(2000);
+  });
+
+  it("reads menus, categories and descriptions from roadmaps.md", () => {
+    const content = parseContent(
+      contentDir({
+        ...basicContent,
+        "roadmaps.md": "# Roadmaps\n\n## Learn\n\n> Start here\n\n### Basics\n\n- demo | A short line\n",
+      }),
+    );
+    expect(content.roadmaps[0]).toMatchObject({
+      menu: "Learn",
+      menuNote: "Start here",
+      category: "Basics",
+      tagline: "A short line",
+    });
+    expect(parseContent(contentDir(basicContent)).roadmaps[0]).toMatchObject({ menu: null, tagline: null });
+    expect(() =>
+      parseContent(contentDir({ ...basicContent, "roadmaps.md": "# Roadmaps\n\n## Learn\n\n- demo\n" })),
+    ).toThrow(/needs a "### Category" heading/);
   });
 
   it("builds the tree with IDs, types, notes and resources", () => {

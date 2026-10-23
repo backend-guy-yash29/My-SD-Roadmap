@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { EnrollmentsProvider } from "@/components/enrollments";
 import { RoadmapProgressProvider } from "@/components/roadmap-progress";
 import { Sidebar } from "@/components/sidebar";
+import { TopNav } from "@/components/top-nav";
 import { getNavigation, type Navigation } from "@/server/content";
 
 const cachedNavigation = unstable_cache(() => getNavigation(db), ["navigation"], {
@@ -26,7 +27,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <RoadmapProgressProvider roadmapIds={nav.map((r) => r.id)}>
         <div className="md:grid md:min-h-screen md:grid-cols-[264px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
           <Sidebar nav={nav} />
-          <div className="min-w-0">{children}</div>
+          <div className="min-w-0">
+            <TopNav nav={nav} />
+            {children}
+          </div>
         </div>
       </RoadmapProgressProvider>
     </EnrollmentsProvider>

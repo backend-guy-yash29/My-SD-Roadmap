@@ -9,6 +9,7 @@ import { testDb } from "@/test/db";
 import { getNavigation, getRoadmap, getTrack, listRoadmaps } from "./content";
 import { enroll, listEnrollments, unenroll } from "./enrollments";
 import { getAppearance, updateAppearance } from "./appearance";
+import { getHome, setDailyGoal } from "./home";
 import { AppError } from "./errors";
 import { getNote, saveNote } from "./notes";
 import { generateUsername, getMyProfile, getPublicProfile, updateProfile } from "./profile";
@@ -44,7 +45,17 @@ async function expectCode(p: Promise<unknown>, code: string) {
 describe("content reads", () => {
   it("lists roadmaps with counts", async () => {
     expect(await listRoadmaps(db)).toEqual([
-      { id: "demo", title: "Demo", summary: "A demo roadmap.", trackCount: 2, itemCount: 4 },
+      {
+        id: "demo",
+        title: "Demo",
+        summary: "A demo roadmap.",
+        menu: null,
+        menuNote: null,
+        category: null,
+        tagline: null,
+        trackCount: 2,
+        itemCount: 4,
+      },
     ]);
   });
   it("returns the roadmap tree and a track with resources", async () => {
@@ -62,6 +73,10 @@ describe("content reads", () => {
       {
         id: "demo",
         title: "Demo",
+        menu: null,
+        menuNote: null,
+        category: null,
+        tagline: null,
         parts: [
           {
             id: "demo/basics",
@@ -230,6 +245,85 @@ describe("appearance", () => {
       "VALIDATION",
     );
     await expectCode(updateAppearance(db, "u1", { extra: true }), "VALIDATION");
+  });
+});
+
+describe("home dashboard", () => {
+  const now = at("2026-03-02T06:00:00Z");
+
+  it("starts empty for a new user", async () => {
+    const home = await getHome(db, "u1", now);
+    expect(home).toMatchObject({ dailyGoal: 5, today: 0, continueLearning: [], suggestion: null });
+    expect(home.week).toMatchObject({ total: 0, previousTotal: 0, activeDays: 0 });
+    expect(home.milestones.badges.every((b) => !b.earned)).toBe(true);
+  });
+
+  it("tracks today, the week, what to continue and finished tracks", async () => {
+    await setItemDone(db, "u1", ALPHA, true, at("2026-02-23T06:00:00Z")); // 7 days before: the previous week
+    await setItemDone(db, "u1", DELTA, true, now);
+    await setItemDone(db, "u1", GAMMA, true, now);
+    const home = await getHome(db, "u1", now);
+    expect(home.today).toBe(2);
+    expect(home.week).toMatchObject({ total: 2, previousTotal: 1, activeDays: 1 });
+    expect(home.continueLearning).toEqual([
+      expect.objectContaining({
+        itemId: BETA,
+        trackId: "demo/first",
+        roadmapTitle: "Demo",
+        done: 3,
+        total: 4,
+      }),
+    ]);
+    expect(home.milestones.tracksDone).toBe(1);
+    expect(home.milestones.closestTrack).toEqual({
+      trackId: "demo/first",
+      title: "First Track",
+      left: 1,
+    });
+    expect(home.milestones.badges.find((b) => b.id === "track-1")?.earned).toBe(true);
+  });
+
+  it("lists revision items, recent notes and opened resources", async () => {
+    await setNeedsRevision(db, "u1", GAMMA, true);
+    await saveNote(db, "u1", BETA, "x".repeat(200));
+    const [res] = await db.select().from(s.resources).where(eq(s.resources.itemId, ALPHA));
+    await openResource(db, res.id, "u1");
+    await openResource(db, res.id, "u1");
+    const home = await getHome(db, "u1", now);
+    expect(home.revision).toEqual({
+      total: 1,
+      items: [expect.objectContaining({ itemId: GAMMA })],
+    });
+    expect(home.notes[0]).toMatchObject({ itemId: BETA, snippet: `${"x".repeat(140)}…` });
+    expect(home.resources).toEqual([
+      expect.objectContaining({ resourceId: res.id, source: "Src" }),
+    ]);
+  });
+
+  it("suggests the next roadmap in course order", async () => {
+    await syncContent(
+      db,
+      parseContent(
+        contentDir({
+          ...basicContent,
+          "roadmaps.md": "# Roadmaps\n\n- demo\n- extra\n",
+          "extra/roadmap.md": "# Extra\n\n## Part\n\n- 01-one\n",
+          "extra/01-one.md": "# One\n\n## G\n\n- Epsilon\n",
+        }),
+      ),
+    );
+    await setItemDone(db, "u1", ALPHA, true, now);
+    expect((await getHome(db, "u1", now)).suggestion).toEqual({
+      from: { id: "demo", title: "Demo", percent: 25 },
+      to: { id: "extra", title: "Extra" },
+    });
+  });
+
+  it("validates the daily goal", async () => {
+    expect(await setDailyGoal(db, "u1", 8)).toBe(8);
+    expect((await getHome(db, "u1", now)).dailyGoal).toBe(8);
+    await expectCode(setDailyGoal(db, "u1", 0), "VALIDATION");
+    await expectCode(setDailyGoal(db, "u1", 2.5), "VALIDATION");
   });
 });
 

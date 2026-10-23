@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Heatmap = { from: string; to: string; days: { date: string; count: number }[] };
 
@@ -27,6 +27,12 @@ export function StudyHeatmap({ heatmap }: { heatmap: Heatmap }) {
   const [hover, setHover] = useState<{ date: string; count: number; x: number; y: number } | null>(
     null,
   );
+  const scroller = useRef<HTMLDivElement>(null);
+  // Start at the latest week: on a narrow card the year doesn't fit, and recent days matter most.
+  useEffect(() => {
+    const el = scroller.current;
+    if (el) el.scrollLeft = el.scrollWidth;
+  }, []);
 
   // Start the grid on the Sunday on or before `from` so rows line up with weekdays.
   const start = addDays(heatmap.from, -weekday(heatmap.from));
@@ -45,7 +51,7 @@ export function StudyHeatmap({ heatmap }: { heatmap: Heatmap }) {
         completed for the first time on <span className="font-semibold text-ink">{activeDays}</span>{" "}
         day{activeDays === 1 ? "" : "s"} in the last year
       </figcaption>
-      <div className="overflow-x-auto pb-1">
+      <div ref={scroller} className="overflow-x-auto pb-1">
         <div
           className="flex gap-[3px]"
           role="grid"

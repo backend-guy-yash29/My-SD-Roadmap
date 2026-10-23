@@ -42,6 +42,11 @@ const roadmapSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
   title: z.string().min(1),
   summary: z.string().nullable(),
+  /** Top-bar menu, its subtitle, the category column within it, and a one-line description. */
+  menu: z.string().nullable(),
+  menuNote: z.string().nullable(),
+  category: z.string().nullable(),
+  tagline: z.string().nullable(),
   parts: z.array(partSchema).min(1),
 });
 
@@ -167,7 +172,7 @@ function parseRoadmap(dir: string, roadmapId: string, problems: string[]): Roadm
   const indexFile = `${roadmapId}/roadmap.md`;
   if (!existsSync(join(base, "roadmap.md"))) {
     problems.push(`${indexFile} is missing`);
-    return { id: roadmapId, title: roadmapId, summary: null, parts: [] };
+    return { id: roadmapId, title: roadmapId, summary: null, ...NO_PLACE, parts: [] };
   }
   const src = read(join(base, "roadmap.md"), indexFile);
   const { title, summary, next } = header(src, problems);
@@ -201,7 +206,7 @@ function parseRoadmap(dir: string, roadmapId: string, problems: string[]): Roadm
   }
   const trackIds = parts.flatMap((p) => p.tracks.map((t) => t.id));
   if (new Set(trackIds).size !== trackIds.length) problems.push(`${indexFile} has two tracks with the same slug`);
-  return { id: roadmapId, title, summary, parts };
+  return { id: roadmapId, title, summary, ...NO_PLACE, parts };
 }
 
 function parseRenames(dir: string, problems: string[]) {
@@ -221,17 +226,52 @@ function parseRenames(dir: string, problems: string[]) {
 }
 
 /** Parses and validates the whole content directory. Throws ContentError listing every problem. */
+type Place = Pick<Roadmap, "menu" | "menuNote" | "category" | "tagline">;
+const NO_PLACE: Place = { menu: null, menuNote: null, category: null, tagline: null };
+
+/**
+ * roadmaps.md lists roadmaps in order. Optional "## Menu" headings (with a "> subtitle") and
+ * "### Category" headings group them for the top bar; "- id | description" adds a one-line description.
+ */
+function parseIndex(src: Lines, problems: string[]) {
+  const entries: { id: string; place: Place }[] = [];
+  let menu: string | null = null;
+  let menuNote: string | null = null;
+  let category: string | null = null;
+  src.lines.forEach((line, i) => {
+    const at = `roadmaps.md:${i + 1}`;
+    if (line.startsWith("### ")) {
+      category = line.slice(4).trim();
+      if (!menu) problems.push(`${at} category outside a menu`);
+    } else if (line.startsWith("## ")) {
+      menu = line.slice(3).trim();
+      menuNote = null;
+      category = null;
+    } else if (line.startsWith("> ")) {
+      if (menu && !category) menuNote = line.slice(2).trim();
+      else problems.push(`${at} a "> subtitle" belongs right under a menu heading`);
+    } else if (line.startsWith("- ")) {
+      const [id, tagline] = line.slice(2).split(" | ").map((x) => x.trim());
+      if (menu && !category) problems.push(`${at} ${id} needs a "### Category" heading`);
+      if (entries.some((e) => e.id === id)) problems.push(`${at} lists ${id} twice`);
+      entries.push({ id, place: { menu, menuNote, category, tagline: tagline || null } });
+    }
+  });
+  return entries;
+}
+
 export function parseContent(dir: string): Content {
   const problems: string[] = [];
   const order = read(join(dir, "roadmaps.md"), "roadmaps.md");
   if (order.lines[0] !== "# Roadmaps") problems.push('roadmaps.md:1 must be "# Roadmaps"');
-  const ids = order.lines.filter((l) => l.startsWith("- ")).map((l) => l.slice(2).trim());
+  const entries = parseIndex(order, problems);
+  const ids = entries.map((e) => e.id);
   const folders = readdirSync(dir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => d.name);
   for (const f of folders) if (!ids.includes(f)) problems.push(`content/${f} is not listed in roadmaps.md`);
 
-  const roadmaps = ids.map((id) => parseRoadmap(dir, id, problems));
+  const roadmaps = entries.map((e) => ({ ...parseRoadmap(dir, e.id, problems), ...e.place }));
   const renames = parseRenames(dir, problems);
   const result = contentSchema.safeParse({ roadmaps, renames });
   if (!result.success) {
@@ -244,7 +284,7 @@ export function parseContent(dir: string): Content {
 /** Flattens the tree into rows with positions, ready for the sync. */
 export function flatten(content: Content) {
   const rows = {
-    roadmaps: [] as { id: string; title: string; summary: string | null; position: number }[],
+    roadmaps: [] as ({ id: string; title: string; summary: string | null; position: number } & Place)[],
     parts: [] as { id: string; roadmapId: string; title: string; position: number }[],
     tracks: [] as {
       id: string;
@@ -267,7 +307,16 @@ export function flatten(content: Content) {
     resources: [] as { itemId: string; source: string; title: string; url: string; position: number }[],
   };
   content.roadmaps.forEach((r, ri) => {
-    rows.roadmaps.push({ id: r.id, title: r.title, summary: r.summary, position: ri });
+    rows.roadmaps.push({
+      id: r.id,
+      title: r.title,
+      summary: r.summary,
+      position: ri,
+      menu: r.menu,
+      menuNote: r.menuNote,
+      category: r.category,
+      tagline: r.tagline,
+    });
     let trackPos = 0;
     r.parts.forEach((p, pi) => {
       rows.parts.push({ id: p.id, roadmapId: r.id, title: p.title, position: pi });
