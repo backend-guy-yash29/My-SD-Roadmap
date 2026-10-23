@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { updateProfile } from "@/server/actions";
 
 type Profile = {
@@ -22,8 +22,10 @@ export function SettingsForm({ profile, timezones }: { profile: Profile; timezon
     kind: "idle" | "saving" | "saved" | "error";
     message?: string;
   }>({ kind: "idle" });
-  const browserTz =
-    typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : null;
+  // Read the browser's timezone after mount: the server renders in its own timezone, so doing it
+  // during render would make server and browser HTML differ.
+  const [browserTz, setBrowserTz] = useState<string | null>(null);
+  useEffect(() => setBrowserTz(Intl.DateTimeFormat().resolvedOptions().timeZone), []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +35,7 @@ export function SettingsForm({ profile, timezones }: { profile: Profile; timezon
   }
 
   const field =
-    "mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-accent";
+    "mt-1.5 w-full rounded-[10px] border border-border bg-surface-2 px-3 py-2 text-sm outline-none focus:border-accent focus:bg-surface";
   return (
     <form onSubmit={submit} className="space-y-5">
       <label className="block">
@@ -107,7 +109,7 @@ export function SettingsForm({ profile, timezones }: { profile: Profile; timezon
         <button
           type="submit"
           disabled={status.kind === "saving"}
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-ink disabled:opacity-50"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-ink disabled:opacity-50"
         >
           {status.kind === "saving" ? "Saving…" : "Save"}
         </button>
@@ -121,7 +123,7 @@ export function SettingsForm({ profile, timezones }: { profile: Profile; timezon
             )}
           </span>
         )}
-        {status.kind === "error" && <span className="text-sm text-red-600">{status.message}</span>}
+        {status.kind === "error" && <span className="text-sm text-danger">{status.message}</span>}
       </div>
     </form>
   );

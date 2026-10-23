@@ -131,3 +131,36 @@ export async function getTrack(db: Db, trackId: string) {
 
 export type RoadmapView = Awaited<ReturnType<typeof getRoadmap>>;
 export type TrackView = Awaited<ReturnType<typeof getTrack>>;
+
+/** Every live roadmap with its parts and numbered tracks, for the sidebar. */
+export async function getNavigation(db: Db) {
+  const [rs, ps, ts, counts] = await Promise.all([
+    db.select().from(roadmaps).where(live.roadmap).orderBy(asc(roadmaps.position)),
+    db.select().from(parts).where(live.part).orderBy(asc(parts.position)),
+    db.select().from(tracks).where(live.track).orderBy(asc(tracks.position)),
+    itemCounts(db),
+  ]);
+  return rs.map((r) => {
+    let number = 0;
+    return {
+      id: r.id,
+      title: r.title,
+      parts: ps
+        .filter((p) => p.roadmapId === r.id)
+        .map((p) => ({
+          id: p.id,
+          title: p.title,
+          tracks: ts
+            .filter((t) => t.partId === p.id)
+            .map((t) => ({
+              id: t.id,
+              number: ++number,
+              title: t.title,
+              itemCount: counts.find((c) => c.trackId === t.id)?.n ?? 0,
+            })),
+        })),
+    };
+  });
+}
+
+export type Navigation = Awaited<ReturnType<typeof getNavigation>>;

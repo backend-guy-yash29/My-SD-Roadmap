@@ -1,19 +1,26 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* `dark:` utilities follow the Semi-dark theme. */
+@custom-variant dark (&:where([data-theme="dim"], [data-theme="dim"] *));
 
-:root {
-  --bg: #fcfcfb;
+:root,
+[data-theme="light"] {
+  --bg: #f7f7f5;
   --surface: #ffffff;
-  --surface-2: #f4f3f0;
-  --border: #e4e2dd;
-  --ink: #1d1d1b;
-  --ink-2: #55554f;
-  --ink-3: #7c7b74;
-  --accent: #256abf;
+  --surface-2: #f2f1ee;
+  --border: #e6e4df;
+  --border-2: #d9d6cf;
+  --ink: #1a1a18;
+  --ink-2: #57564f;
+  --ink-3: #807f77;
+  --accent: #4f46e5;
+  --accent-2: #9333ea;
   --accent-ink: #ffffff;
-  --accent-soft: #e6effb;
-  --done: #0ca30c;
+  --accent-soft: #eef0ff;
+  --done: #16a34a;
+  --done-soft: #e8f6ed;
+  --danger: #dc2626;
+  --shadow: 0 1px 2px rgb(20 20 15 / 0.04), 0 8px 24px rgb(20 20 15 / 0.06);
   /* Heatmap: one blue ramp, light -> dark = fewer -> more */
   --heat-0: #ebeae6;
   --heat-1: #b7d3f6;
@@ -23,41 +30,25 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #141413;
-    --surface: #1a1a19;
-    --surface-2: #232321;
-    --border: #33332f;
-    --ink: #f1f0ec;
-    --ink-2: #bdbcb5;
-    --ink-3: #8f8e87;
-    --accent: #5598e7;
-    --accent-ink: #0d1a2b;
-    --accent-soft: #16263b;
-    --done: #3cc23c;
-    --heat-0: #2a2a28;
-    --heat-1: #104281;
-    --heat-2: #1c5cab;
-    --heat-3: #3987e5;
-    --heat-4: #9ec5f4;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme="dark"] {
-  --bg: #141413;
-  --surface: #1a1a19;
-  --surface-2: #232321;
-  --border: #33332f;
-  --ink: #f1f0ec;
-  --ink-2: #bdbcb5;
-  --ink-3: #8f8e87;
-  --accent: #5598e7;
-  --accent-ink: #0d1a2b;
-  --accent-soft: #16263b;
-  --done: #3cc23c;
-  --heat-0: #2a2a28;
+[data-theme="dim"] {
+  --bg: #1c1f26;
+  --surface: #242833;
+  --surface-2: #2b303c;
+  --border: #353b48;
+  --border-2: #414856;
+  --ink: #eceef3;
+  --ink-2: #b4bac7;
+  --ink-3: #8f97a8;
+  --accent: #8b8cf8;
+  --accent-2: #c084fc;
+  --accent-ink: #14152b;
+  --accent-soft: #2f3250;
+  --done: #4ade80;
+  --done-soft: #23382c;
+  --danger: #f87171;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 10px 30px rgb(0 0 0 / 0.25);
+  /* Heatmap on the semi-dark surface: more = lighter */
+  --heat-0: #323846;
   --heat-1: #104281;
   --heat-2: #1c5cab;
   --heat-3: #3987e5;
@@ -70,17 +61,61 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
+  --color-border-2: var(--border-2);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-done: var(--done);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-done-soft: var(--done-soft);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
+  --shadow-card: var(--shadow);
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
+}
+
+/* Small progress ring: set --p (0-100) and --ring-hole to the background behind it. */
+.ring {
+  --p: 0;
+  --ring-hole: var(--surface);
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: conic-gradient(var(--done) calc(var(--p) * 1%), var(--border) 0);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ring::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: var(--ring-hole);
+}
+
+.hero-glow {
+  position: relative;
+  overflow: hidden;
+}
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto auto;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle at 70% 30%, var(--accent-soft), transparent 70%);
+  pointer-events: none;
+}
+
+.bar-gradient {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
 }

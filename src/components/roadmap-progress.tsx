@@ -1,41 +1,55 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getRoadmapProgress, setItemDone } from "@/server/actions";
 
 type Progress = Extract<Awaited<ReturnType<typeof getRoadmapProgress>>, { ok: true }>["data"];
 
 type State =
+  | { status: "idle" }
   | { status: "loading" }
   | { status: "signed-out" }
   | { status: "error"; message: string }
   | { status: "ready"; progress: Progress };
 
 type ContextValue = {
+  roadmapId: string | null;
   state: State;
   isDone: (itemId: string) => boolean;
   hasNote: (itemId: string) => boolean;
+  trackDone: (trackId: string) => number | null;
   toggleDone: (itemId: string, trackId: string) => Promise<void>;
   markNoted: (itemId: string, noted: boolean) => void;
-  streak: number | null;
+  /** Bumps whenever a change could affect streaks, so summaries can refetch. */
+  version: number;
   error: string | null;
 };
 
 const RoadmapProgressContext = createContext<ContextValue | null>(null);
 
+/** Loads the signed-in user's progress for whichever roadmap the URL is in. */
 export function RoadmapProgressProvider({
-  roadmapId,
+  roadmapIds,
   children,
 }: {
-  roadmapId: string;
+  roadmapIds: string[];
   children: React.ReactNode;
 }) {
-  const [state, setState] = useState<State>({ status: "loading" });
-  const [streak, setStreak] = useState<number | null>(null);
+  const pathname = usePathname();
+  const segment = pathname.split("/")[1] ?? "";
+  const roadmapId = roadmapIds.includes(segment) ? segment : null;
+  const [state, setState] = useState<State>({ status: "idle" });
+  const [version, setVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!roadmapId) {
+      setState({ status: "idle" });
+      return;
+    }
     let cancelled = false;
+    setState({ status: "loading" });
     getRoadmapProgress(roadmapId).then((res) => {
       if (cancelled) return;
       if (res.ok) setState({ status: "ready", progress: res.data });
@@ -85,7 +99,7 @@ export function RoadmapProgressProvider({
       apply(itemId, trackId, next); // optimistic
       setError(null);
       const res = await setItemDone(itemId, next);
-      if (res.ok) setStreak(res.data.currentStreak);
+      if (res.ok) setVersion((v) => v + 1);
       else {
         apply(itemId, trackId, !next);
         setError(res.error.message);
@@ -106,12 +120,14 @@ export function RoadmapProgressProvider({
   }, []);
 
   const value: ContextValue = {
+    roadmapId,
     state,
     isDone: (id) => done.has(id),
     hasNote: (id) => noted.has(id),
+    trackDone: (id) => (state.status === "ready" ? (state.progress.tracks[id]?.done ?? 0) : null),
     toggleDone,
     markNoted,
-    streak,
+    version,
     error,
   };
   return (

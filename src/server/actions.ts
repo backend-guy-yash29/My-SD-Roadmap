@@ -6,8 +6,10 @@ import { currentUserId } from "@/auth";
 import { db } from "@/db";
 import { AppError, toResult } from "./errors";
 import { getNote as readNote, saveNote as writeNote } from "./notes";
+import { addDays } from "./dates";
 import {
   getRoadmapProgress as readProgress,
+  getStudyStats,
   setItemDone as writeDone,
   setNeedsRevision as writeRevision,
 } from "./progress";
@@ -61,5 +63,18 @@ export async function updateProfile(patch: unknown) {
     const profile = await writeProfile(db, await requireUser(), patch);
     revalidatePath("/", "layout");
     return profile;
+  });
+}
+
+/** Streaks plus first completions for each of the last 7 days (oldest first), for the right rail. */
+export async function getStudySummary() {
+  return toResult(async () => {
+    const stats = await getStudyStats(db, await requireUser());
+    const counts = new Map(stats.heatmap.days.map((d) => [d.date, d.count]));
+    const week = Array.from({ length: 7 }, (_, i) => {
+      const date = addDays(stats.heatmap.to, i - 6);
+      return { date, count: counts.get(date) ?? 0 };
+    });
+    return { currentStreak: stats.currentStreak, longestStreak: stats.longestStreak, week };
   });
 }
