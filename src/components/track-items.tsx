@@ -16,12 +16,13 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 type Item = Track["groups"][number]["items"][number];
-type Filter = "all" | "todo" | "done" | "links";
+type Filter = "all" | "todo" | "done" | "revise" | "links";
 
 const FILTERS: [Filter, string][] = [
   ["all", "All"],
   ["todo", "To do"],
   ["done", "Done"],
+  ["revise", "To revise"],
   ["links", "Has study links"],
 ];
 
@@ -62,10 +63,12 @@ function Checkbox({
 }
 
 function ItemRow({ item, trackId, signedIn }: { item: Item; trackId: string; signedIn: boolean }) {
-  const { isDone, hasNote, toggleDone, markNoted } = useRoadmapProgress();
+  const { isDone, hasNote, needsRevision, toggleDone, toggleRevision, markNoted } =
+    useRoadmapProgress();
   const [noteOpen, setNoteOpen] = useState(false);
   const done = isDone(item.id);
   const noted = hasNote(item.id);
+  const revise = needsRevision(item.id);
   return (
     <li className="border-b border-border px-[18px] py-[11px] last:border-0 hover:bg-surface-2">
       <div className="flex items-center gap-3">
@@ -84,6 +87,22 @@ function ItemRow({ item, trackId, signedIn }: { item: Item; trackId: string; sig
           <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[0.6875rem] font-semibold text-accent">
             {TYPE_LABEL[item.type]}
           </span>
+        )}
+        {signedIn && (
+          <button
+            type="button"
+            onClick={() => toggleRevision(item.id)}
+            aria-pressed={revise}
+            aria-label={`${revise ? "Remove" : "Mark"} ${item.title} for revision`}
+            title={revise ? "Marked for revision" : "Mark for revision"}
+            className={`rounded-lg border px-2 py-0.5 text-xs font-medium ${
+              revise
+                ? "border-accent bg-accent-soft text-accent"
+                : "border-border text-ink-2 hover:border-accent hover:text-accent"
+            }`}
+          >
+            ↻{revise ? " Revise" : ""}
+          </button>
         )}
         {signedIn && (
           <button
@@ -128,14 +147,16 @@ function Group({
   signedIn: boolean;
   filter: Filter;
 }) {
-  const { isDone } = useRoadmapProgress();
+  const { isDone, needsRevision } = useRoadmapProgress();
   const [open, setOpen] = useState(true);
   const items = group.items.filter((i) =>
     filter === "all"
       ? true
       : filter === "links"
         ? i.resources.length > 0
-        : (filter === "done") === isDone(i.id),
+        : filter === "revise"
+          ? needsRevision(i.id)
+          : (filter === "done") === isDone(i.id),
   );
   if (!items.length) return null;
   const done = group.items.filter((i) => isDone(i.id)).length;

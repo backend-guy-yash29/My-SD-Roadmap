@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ThemeToggle } from "./theme";
 
 export type Crumb = { label: string; href?: string };
 
-/** Breadcrumbs on the left, theme switch on the right. */
+/** Breadcrumbs for the current page; the theme switch lives in the top bar. */
 export function PageHeader({ crumbs }: { crumbs: Crumb[] }) {
   return (
     <div className="flex items-center justify-between gap-4">
@@ -23,9 +22,6 @@ export function PageHeader({ crumbs }: { crumbs: Crumb[] }) {
           </span>
         ))}
       </nav>
-      <div className="hidden md:block">
-        <ThemeToggle />
-      </div>
     </div>
   );
 }

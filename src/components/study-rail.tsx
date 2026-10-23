@@ -142,12 +142,12 @@ export function UpNextCard({
   );
 }
 
-/** Main column plus a sticky right rail that appears on wide screens. */
+/** Main column plus a right rail that appears on wide screens, pinned below the top bar. */
 export function WithRail({ children, rail }: { children: React.ReactNode; rail: React.ReactNode }) {
   return (
     <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_300px]">
       <main className="min-w-0 px-4 pb-20 pt-6 md:px-10 md:pt-7">{children}</main>
-      <aside className="hidden border-l border-border px-[22px] py-7 xl:sticky xl:top-0 xl:block xl:h-screen xl:overflow-y-auto">
+      <aside className="hidden border-l border-border px-[22px] py-7 xl:sticky xl:top-16 xl:block xl:h-[calc(100vh-4rem)] xl:overflow-y-auto">
         {rail}
       </aside>
     </div>

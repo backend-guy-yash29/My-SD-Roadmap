@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { getRoadmapProgress, setItemDone } from "@/server/actions";
+import { getRoadmapProgress, setItemDone, setNeedsRevision } from "@/server/actions";
 import { useEnrollments } from "./enrollments";
 
 type Progress = Extract<Awaited<ReturnType<typeof getRoadmapProgress>>, { ok: true }>["data"];
@@ -19,6 +19,8 @@ type ContextValue = {
   state: State;
   isDone: (itemId: string) => boolean;
   hasNote: (itemId: string) => boolean;
+  needsRevision: (itemId: string) => boolean;
+  toggleRevision: (itemId: string) => Promise<void>;
   trackDone: (trackId: string) => number | null;
   toggleDone: (itemId: string, trackId: string) => Promise<void>;
   markNoted: (itemId: string, noted: boolean) => void;
@@ -70,6 +72,35 @@ export function RoadmapProgressProvider({
   const noted = useMemo(
     () => new Set(state.status === "ready" ? state.progress.notedItemIds : []),
     [state],
+  );
+  const revise = useMemo(
+    () => new Set(state.status === "ready" ? state.progress.revisionItemIds : []),
+    [state],
+  );
+
+  const setRevision = useCallback((itemId: string, value: boolean) => {
+    setState((s) => {
+      if (s.status !== "ready") return s;
+      const ids = s.progress.revisionItemIds.filter((i) => i !== itemId);
+      return {
+        status: "ready",
+        progress: { ...s.progress, revisionItemIds: value ? [...ids, itemId] : ids },
+      };
+    });
+  }, []);
+
+  const toggleRevision = useCallback(
+    async (itemId: string) => {
+      const next = !revise.has(itemId);
+      setRevision(itemId, next); // optimistic
+      setError(null);
+      const res = await setNeedsRevision(itemId, next);
+      if (!res.ok) {
+        setRevision(itemId, !next);
+        setError(res.error.message);
+      }
+    },
+    [revise, setRevision],
   );
 
   const apply = useCallback((itemId: string, trackId: string, value: boolean) => {
@@ -128,6 +159,8 @@ export function RoadmapProgressProvider({
     state,
     isDone: (id) => done.has(id),
     hasNote: (id) => noted.has(id),
+    needsRevision: (id) => revise.has(id),
+    toggleRevision,
     trackDone: (id) => (state.status === "ready" ? (state.progress.tracks[id]?.done ?? 0) : null),
     toggleDone,
     markNoted,
