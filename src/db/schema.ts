@@ -202,6 +202,21 @@ export const userItemProgress = pgTable(
   ],
 );
 
+/** Roadmaps a user follows. Leaving a roadmap deletes the row; progress is kept unless the user asks otherwise. */
+export const enrollments = pgTable(
+  "enrollments",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    roadmapId: text("roadmap_id")
+      .notNull()
+      .references(() => roadmaps.id, { onDelete: "cascade" }),
+    enrolledAt: tz("enrolled_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.roadmapId] })],
+);
+
 /** First completion per user and item. Never updated or deleted by the app. */
 export const itemCompletions = pgTable(
   "item_completions",

@@ -77,7 +77,7 @@ export async function getPublicProfile(
     name: user.name,
     image: user.image,
     isPublic: user.profilePublic,
-    roadmaps: roadmapsProgress,
+    roadmaps: roadmapsProgress.filter((r) => r.enrolled),
     currentStreak: stats.currentStreak,
     longestStreak: stats.longestStreak,
     heatmap: stats.heatmap,

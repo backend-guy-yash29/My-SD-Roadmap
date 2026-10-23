@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { StudyHeatmap } from "@/components/heatmap";
+import { EnrollControl } from "@/components/enroll";
 import { Card, PageHeader, PageMain } from "@/components/page-header";
 import { ProgressBar } from "@/components/progress-bar";
 import { listRoadmaps } from "@/server/content";
@@ -26,28 +27,64 @@ function RoadmapCard({
   title,
   summary,
   footer,
+  action,
 }: {
   id: string;
   title: string;
   summary: string | null;
   footer: React.ReactNode;
+  action?: React.ReactNode;
 }) {
   return (
-    <li>
+    <li className="relative flex flex-col rounded-[14px] border border-border bg-surface p-5 transition-shadow hover:border-accent hover:shadow-card">
+      <span className="font-mono text-[11px] text-accent">ROADMAP</span>
+      {/* The link covers the card; the action sits above it. */}
       <Link
         href={`/${id}`}
-        className="flex h-full flex-col rounded-[14px] border border-border bg-surface p-5 transition-shadow hover:border-accent hover:shadow-card"
+        className="mt-1 text-base font-semibold after:absolute after:inset-0 after:rounded-[14px]"
       >
-        <span className="font-mono text-[11px] text-accent">ROADMAP</span>
-        <span className="mt-1 text-base font-semibold">{title}</span>
-        {summary && <span className="mt-1 line-clamp-2 flex-1 text-ink-2">{summary}</span>}
-        <div className="mt-4">{footer}</div>
+        {title}
       </Link>
+      {summary && <p className="mt-1 line-clamp-2 flex-1 text-ink-2">{summary}</p>}
+      <div className="mt-4">{footer}</div>
+      {action && <div className="relative z-10 mt-3">{action}</div>}
     </li>
   );
 }
 
-export default async function Home() {
+function RoadmapTabs({ tab, mine, available }: { tab: Tab; mine: number; available: number }) {
+  const heading = "text-[11px] font-semibold uppercase tracking-[0.08em]";
+  if (mine === 0) return <h2 className={`${heading} mb-3 text-ink-3`}>Available roadmaps</h2>;
+  return (
+    <nav aria-label="Roadmap lists" className="mb-4 flex gap-5 border-b border-border">
+      {(
+        [
+          ["mine", "My roadmaps", mine],
+          ["available", "Available roadmaps", available],
+        ] as const
+      ).map(([key, label, n]) => (
+        <Link
+          key={key}
+          href={key === "mine" ? "/" : "/?tab=available"}
+          aria-current={tab === key ? "page" : undefined}
+          scroll={false}
+          className={`${heading} -mb-px border-b-2 pb-2.5 ${
+            tab === key
+              ? "border-accent text-accent"
+              : "border-transparent text-ink-3 hover:text-ink-2"
+          }`}
+        >
+          {label} <span className="font-mono font-medium">{n}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+type Tab = "mine" | "available";
+type Props = { searchParams: Promise<{ tab?: string }> };
+
+export default async function Home({ searchParams }: Props) {
   const session = await auth();
   const roadmaps = await listRoadmaps(db);
 
@@ -73,6 +110,7 @@ export default async function Home() {
             Sign in to track progress
           </Link>
         </section>
+        <RoadmapTabs tab="available" mine={0} available={roadmaps.length} />
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {roadmaps.map((r) => (
             <RoadmapCard
@@ -91,7 +129,11 @@ export default async function Home() {
   }
 
   const dash = await getDashboard(db, session.user.id);
-  const summaries = new Map(roadmaps.map((r) => [r.id, r.summary]));
+  const content = new Map(roadmaps.map((r) => [r.id, r]));
+  const mine = dash.roadmaps.filter((r) => r.enrolled);
+  const tab: Tab =
+    mine.length > 0 && (await searchParams).tab !== "available" ? "mine" : "available";
+  const shown = tab === "mine" ? mine : dash.roadmaps;
   const firstName = session.user.name?.split(" ")[0];
   return (
     <PageMain>
@@ -123,7 +165,7 @@ export default async function Home() {
         ) : (
           <Card className="!p-4">
             <p className="text-[13px] font-semibold text-ink-2">Continue where you left off</p>
-            <p className="mt-1.5 text-ink-2">Pick a roadmap below to start.</p>
+            <p className="mt-1.5 text-ink-2">Enroll in a roadmap below to start.</p>
           </Card>
         )}
       </section>
@@ -133,21 +175,34 @@ export default async function Home() {
         <StudyHeatmap heatmap={dash.heatmap} />
       </Card>
 
-      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
-        Your roadmaps
-      </h2>
+      <RoadmapTabs tab={tab} mine={mine.length} available={dash.roadmaps.length} />
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {dash.roadmaps.map((r) => (
-          <RoadmapCard
-            key={r.id}
-            id={r.id}
-            title={r.title}
-            summary={summaries.get(r.id) ?? null}
-            footer={
-              <ProgressBar done={r.done} total={r.total} label={`${r.title} progress`} gradient />
-            }
-          />
-        ))}
+        {shown.map((r) => {
+          const c = content.get(r.id);
+          return (
+            <RoadmapCard
+              key={r.id}
+              id={r.id}
+              title={r.title}
+              summary={c?.summary ?? null}
+              footer={
+                r.enrolled || r.done > 0 ? (
+                  <ProgressBar
+                    done={r.done}
+                    total={r.total}
+                    label={`${r.title} progress`}
+                    gradient
+                  />
+                ) : (
+                  <span className="font-mono text-[11px] text-ink-3">
+                    {c?.trackCount} tracks · {c?.itemCount} topics
+                  </span>
+                )
+              }
+              action={<EnrollControl roadmapId={r.id} title={r.title} />}
+            />
+          );
+        })}
       </ul>
     </PageMain>
   );

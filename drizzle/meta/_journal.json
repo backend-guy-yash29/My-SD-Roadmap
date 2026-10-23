@@ -8,6 +8,13 @@
       "when": 1791543582101,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792754938179,
+      "tag": "0001_enrollments",
+      "breakpoints": true
     }
   ]
 }

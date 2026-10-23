@@ -7,6 +7,7 @@ import { syncContent } from "@/content/sync";
 import { basicContent, contentDir } from "@/test/fixtures";
 import { testDb } from "@/test/db";
 import { getNavigation, getRoadmap, getTrack, listRoadmaps } from "./content";
+import { enroll, listEnrollments, unenroll } from "./enrollments";
 import { AppError } from "./errors";
 import { getNote, saveNote } from "./notes";
 import { generateUsername, getMyProfile, getPublicProfile, updateProfile } from "./profile";
@@ -173,7 +174,41 @@ describe("progress views", () => {
       trackId: "demo/second",
       roadmapId: "demo",
     });
-    expect(dash.roadmaps).toEqual([{ id: "demo", title: "Demo", total: 4, done: 2 }]);
+    expect(dash.roadmaps).toEqual([
+      { id: "demo", title: "Demo", total: 4, done: 2, enrolled: true },
+    ]);
+  });
+});
+
+describe("enrollments", () => {
+  it("enrolls and leaves, keeping progress by default", async () => {
+    expect(await enroll(db, "u1", "demo")).toEqual(["demo"]);
+    expect(await enroll(db, "u1", "demo")).toEqual(["demo"]); // idempotent
+    await expectCode(enroll(db, "u1", "nope"), "NOT_FOUND");
+    await setItemDone(db, "u1", ALPHA, true);
+    await saveNote(db, "u1", BETA, "keep me");
+    expect(await unenroll(db, "u1", "demo", false)).toEqual([]);
+    const progress = await getRoadmapProgress(db, "u1", "demo");
+    expect([progress.doneItemIds, progress.notedItemIds]).toEqual([[ALPHA], [BETA]]);
+  });
+
+  it("enrolls on the first tick, not on unticking", async () => {
+    await setItemDone(db, "u1", ALPHA, false);
+    expect(await listEnrollments(db, "u1")).toEqual([]);
+    await setItemDone(db, "u1", ALPHA, true);
+    expect(await listEnrollments(db, "u1")).toEqual(["demo"]);
+    expect(await listEnrollments(db, "u2")).toEqual([]);
+  });
+
+  it("deletes ticks and notes on request but keeps streak credit", async () => {
+    await setItemDone(db, "u1", ALPHA, true, at("2026-03-01T06:00:00Z"));
+    await saveNote(db, "u1", BETA, "gone soon");
+    await setItemDone(db, "u2", ALPHA, true);
+    await unenroll(db, "u1", "demo", true, at("2026-03-01T07:00:00Z"));
+    const progress = await getRoadmapProgress(db, "u1", "demo");
+    expect([progress.done, progress.notedItemIds]).toEqual([0, []]);
+    expect((await getDashboard(db, "u1", at("2026-03-01T08:00:00Z"))).currentStreak).toBe(1);
+    expect((await getRoadmapProgress(db, "u2", "demo")).done).toBe(1);
   });
 });
 
@@ -225,7 +260,9 @@ describe("profiles", () => {
     await setItemDone(db, "u1", ALPHA, true);
     const pub = await getPublicProfile(db, "ada", null);
     expect(pub).toMatchObject({ username: "ada", isPublic: true, currentStreak: 1 });
-    expect(pub.roadmaps).toEqual([{ id: "demo", title: "Demo", total: 4, done: 1 }]);
+    expect(pub.roadmaps).toEqual([
+      { id: "demo", title: "Demo", total: 4, done: 1, enrolled: true },
+    ]);
     expect(pub).not.toHaveProperty("email");
     await expectCode(getPublicProfile(db, "nobody", null), "NOT_FOUND");
   });

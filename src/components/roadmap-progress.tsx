@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { getRoadmapProgress, setItemDone } from "@/server/actions";
+import { useEnrollments } from "./enrollments";
 
 type Progress = Extract<Awaited<ReturnType<typeof getRoadmapProgress>>, { ok: true }>["data"];
 
@@ -42,6 +43,7 @@ export function RoadmapProgressProvider({
   const [state, setState] = useState<State>({ status: "idle" });
   const [version, setVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const { markEnrolled, resetVersion } = useEnrollments();
 
   useEffect(() => {
     if (!roadmapId) {
@@ -59,7 +61,7 @@ export function RoadmapProgressProvider({
     return () => {
       cancelled = true;
     };
-  }, [roadmapId]);
+  }, [roadmapId, resetVersion]);
 
   const done = useMemo(
     () => new Set(state.status === "ready" ? state.progress.doneItemIds : []),
@@ -99,13 +101,15 @@ export function RoadmapProgressProvider({
       apply(itemId, trackId, next); // optimistic
       setError(null);
       const res = await setItemDone(itemId, next);
-      if (res.ok) setVersion((v) => v + 1);
-      else {
+      if (res.ok) {
+        setVersion((v) => v + 1);
+        if (next && roadmapId) markEnrolled(roadmapId);
+      } else {
         apply(itemId, trackId, !next);
         setError(res.error.message);
       }
     },
-    [apply, done],
+    [apply, done, markEnrolled, roadmapId],
   );
 
   const markNoted = useCallback((itemId: string, value: boolean) => {

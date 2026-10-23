@@ -2,6 +2,7 @@ import { and, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import {
   activityEvents,
+  enrollments,
   itemCompletions,
   items,
   notes,
@@ -28,10 +29,11 @@ export async function checkWriteLimit(db: Db, userId: string, now = new Date()) 
 
 async function liveItem(db: Db, itemId: string) {
   const [item] = await db
-    .select({ id: items.id })
+    .select({ id: items.id, roadmapId: items.roadmapId })
     .from(items)
     .where(and(eq(items.id, itemId), isNull(items.archivedAt)));
   if (!item) throw new AppError("NOT_FOUND", "Item not found");
+  return item;
 }
 
 async function userTimezone(db: Db, userId: string) {
@@ -74,7 +76,7 @@ export async function setItemDone(
   done: boolean,
   now = new Date(),
 ) {
-  await liveItem(db, itemId);
+  const { roadmapId } = await liveItem(db, itemId);
   await checkWriteLimit(db, userId, now);
   const timezone = await userTimezone(db, userId);
   const firstCompletion = await db.transaction(async (tx) => {
@@ -94,6 +96,11 @@ export async function setItemDone(
       });
     let first = false;
     if (done) {
+      // Ticking an item enrolls the user in its roadmap.
+      await tx
+        .insert(enrollments)
+        .values({ userId, roadmapId, enrolledAt: now })
+        .onConflictDoNothing();
       const inserted = await tx
         .insert(itemCompletions)
         .values({ userId, itemId, completedAt: now, localDate: localDate(now, timezone) })
@@ -175,9 +182,9 @@ export async function getRoadmapProgress(db: Db, userId: string, roadmapId: stri
   };
 }
 
-/** Done/total per live roadmap for one user. */
+/** Done/total and enrollment per live roadmap for one user. */
 export async function roadmapTotals(db: Db, userId: string) {
-  const [all, done] = await Promise.all([
+  const [all, done, enrolled] = await Promise.all([
     db
       .select({ id: roadmaps.id, title: roadmaps.title, total: count(items.id) })
       .from(roadmaps)
@@ -197,12 +204,17 @@ export async function roadmapTotals(db: Db, userId: string) {
         ),
       )
       .groupBy(items.roadmapId),
+    db
+      .select({ roadmapId: enrollments.roadmapId })
+      .from(enrollments)
+      .where(eq(enrollments.userId, userId)),
   ]);
   return all.map((r) => ({
     id: r.id,
     title: r.title,
     total: r.total,
     done: done.find((d) => d.roadmapId === r.id)?.n ?? 0,
+    enrolled: enrolled.some((e) => e.roadmapId === r.id),
   }));
 }
 

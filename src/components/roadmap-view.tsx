@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { RoadmapView } from "@/server/content";
+import { EnrollControl } from "./enroll";
 import { ProgressBar } from "./progress-bar";
 import { useRoadmapProgress } from "./roadmap-progress";
 import { RoadmapProgressCard, StreakCard, UpNextCard } from "./study-rail";
@@ -17,7 +18,10 @@ export function RoadmapMain({ roadmap }: { roadmap: RoadmapView }) {
   return (
     <>
       <section className="hero-glow mb-7 mt-5 rounded-2xl border border-border bg-surface px-6 py-6 shadow-card md:px-7">
-        <p className="relative font-mono text-xs tracking-[0.04em] text-accent">ROADMAP</p>
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <p className="font-mono text-xs tracking-[0.04em] text-accent">ROADMAP</p>
+          <EnrollControl roadmapId={roadmap.id} title={roadmap.title} />
+        </div>
         <h1 className="relative mb-2 mt-1.5 text-[26px] font-bold leading-tight tracking-tight md:text-[30px]">
           {roadmap.title}
         </h1>

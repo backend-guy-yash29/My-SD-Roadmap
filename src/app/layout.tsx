@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
+import { EnrollmentsProvider } from "@/components/enrollments";
 import { Providers } from "@/components/providers";
 import { RoadmapProgressProvider } from "@/components/roadmap-progress";
 import { Sidebar } from "@/components/sidebar";
@@ -39,12 +40,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-screen font-sans text-sm leading-normal antialiased">
         <Providers>
-          <RoadmapProgressProvider roadmapIds={nav.map((r) => r.id)}>
-            <div className="md:grid md:min-h-screen md:grid-cols-[264px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
-              <Sidebar nav={nav} />
-              <div className="min-w-0">{children}</div>
-            </div>
-          </RoadmapProgressProvider>
+          <EnrollmentsProvider>
+            <RoadmapProgressProvider roadmapIds={nav.map((r) => r.id)}>
+              <div className="md:grid md:min-h-screen md:grid-cols-[264px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
+                <Sidebar nav={nav} />
+                <div className="min-w-0">{children}</div>
+              </div>
+            </RoadmapProgressProvider>
+          </EnrollmentsProvider>
         </Providers>
       </body>
     </html>

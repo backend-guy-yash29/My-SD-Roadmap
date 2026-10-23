@@ -79,6 +79,9 @@ export default async function ProfilePage({ params }: Props) {
             <ProgressBar done={r.done} total={r.total} label={`${r.title} progress`} gradient />
           </Card>
         ))}
+        {profile.roadmaps.length === 0 && (
+          <p className="text-ink-3">Not enrolled in any roadmap yet.</p>
+        )}
       </div>
     </PageMain>
   );
