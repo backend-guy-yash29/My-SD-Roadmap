@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import type { Navigation } from "@/server/content";
 import { useEnrollments } from "./enrollments";
 import { useRoadmapProgress } from "./roadmap-progress";
-import { ThemeToggle } from "./theme";
+import { clearAppearance, ThemeToggle } from "./theme";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -239,7 +239,10 @@ function Account() {
       </Link>
       <button
         type="button"
-        onClick={() => signOut({ redirectTo: "/" })}
+        onClick={() => {
+          clearAppearance();
+          signOut({ redirectTo: "/" });
+        }}
         className="rounded-lg px-2 py-1.5 text-xs text-ink-3 hover:bg-surface-2 hover:text-ink"
       >
         Sign out

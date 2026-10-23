@@ -43,10 +43,30 @@ export function applyAppearance(a: Appearance) {
   }
 }
 
-/** After sign-in, applies the account's appearance; a device choice made before then is saved to the account instead. */
+/** Forgets this device's appearance and shows the default look, e.g. on sign-out. */
+export function clearAppearance() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("theme");
+  } catch {
+    // Nothing stored, or storage unavailable.
+  }
+  window.__applyAppearance?.(DEFAULT_APPEARANCE);
+}
+
+/**
+ * Signed in: applies the account's appearance (a device choice from before accounts had one is
+ * saved to the account instead). Signed out: appearance options belong to accounts, so the
+ * default look is shown.
+ */
 export function AppearanceSync() {
   const { status } = useSession();
   useEffect(() => {
+    if (status === "unauthenticated") {
+      if (JSON.stringify(storedAppearance()) !== JSON.stringify(DEFAULT_APPEARANCE))
+        clearAppearance();
+      return;
+    }
     if (status !== "authenticated") return;
     let cancelled = false;
     const before = changes;
@@ -79,9 +99,11 @@ function useResolvedMode() {
   return mode;
 }
 
+/** Quick Light/Dark switch for signed-in users; saved to their account like the rest of Appearance. */
 export function ThemeToggle() {
   const { status } = useSession();
   const mode = useResolvedMode();
+  if (status !== "authenticated") return null;
 
   function choose(next: "light" | "dark") {
     const a = { ...storedAppearance(), mode: next };

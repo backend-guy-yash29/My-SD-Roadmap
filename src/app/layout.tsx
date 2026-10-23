@@ -7,14 +7,8 @@ import {
   JetBrains_Mono,
   Source_Serif_4,
 } from "next/font/google";
-import { unstable_cache } from "next/cache";
-import { db } from "@/db";
-import { EnrollmentsProvider } from "@/components/enrollments";
 import { Providers } from "@/components/providers";
-import { RoadmapProgressProvider } from "@/components/roadmap-progress";
-import { Sidebar } from "@/components/sidebar";
 import { APPEARANCE_SCRIPT, appearanceCss } from "@/lib/appearance";
-import { getNavigation, type Navigation } from "@/server/content";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -42,21 +36,7 @@ export const metadata: Metadata = {
   description: "Structured study roadmaps for system design, ML and AI, with progress tracking.",
 };
 
-const cachedNavigation = unstable_cache(() => getNavigation(db), ["navigation"], {
-  revalidate: 300,
-});
-
-/** The sidebar's roadmap tree. Empty when the database is unreachable (e.g. a CI build), so pages still render. */
-async function loadNavigation(): Promise<Navigation> {
-  try {
-    return await cachedNavigation();
-  } catch {
-    return [];
-  }
-}
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const nav = await loadNavigation();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <head>
@@ -64,16 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_SCRIPT }} />
       </head>
       <body className="min-h-screen font-sans text-sm leading-normal antialiased">
-        <Providers>
-          <EnrollmentsProvider>
-            <RoadmapProgressProvider roadmapIds={nav.map((r) => r.id)}>
-              <div className="md:grid md:min-h-screen md:grid-cols-[264px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
-                <Sidebar nav={nav} />
-                <div className="min-w-0">{children}</div>
-              </div>
-            </RoadmapProgressProvider>
-          </EnrollmentsProvider>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
