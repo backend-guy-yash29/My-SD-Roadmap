@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, isNull, sql } from "drizzle-orm";
+import { and, count, eq, gte, isNull, sql } from "drizzle-orm";
 import type { Db } from "@/db";
 import {
   activityEvents,
@@ -7,7 +7,6 @@ import {
   items,
   notes,
   roadmaps,
-  tracks,
   userItemProgress,
   users,
 } from "@/db/schema";
@@ -220,30 +219,4 @@ export async function roadmapTotals(db: Db, userId: string) {
 
 export async function getStudyStats(db: Db, userId: string, now = new Date()) {
   return studyStats(db, userId, await userTimezone(db, userId), now);
-}
-
-export async function getDashboard(db: Db, userId: string, now = new Date()) {
-  const [roadmapsProgress, stats, last] = await Promise.all([
-    roadmapTotals(db, userId),
-    getStudyStats(db, userId, now),
-    db
-      .select({
-        type: activityEvents.type,
-        at: activityEvents.createdAt,
-        itemId: items.id,
-        itemTitle: items.title,
-        trackId: tracks.id,
-        trackTitle: tracks.title,
-        roadmapId: tracks.roadmapId,
-      })
-      .from(activityEvents)
-      .innerJoin(items, eq(items.id, activityEvents.itemId))
-      .innerJoin(tracks, eq(tracks.id, items.trackId))
-      .where(
-        and(eq(activityEvents.userId, userId), isNull(items.archivedAt), isNull(tracks.archivedAt)),
-      )
-      .orderBy(desc(activityEvents.createdAt), desc(activityEvents.id))
-      .limit(1),
-  ]);
-  return { roadmaps: roadmapsProgress, ...stats, lastActivity: last[0] ?? null };
 }

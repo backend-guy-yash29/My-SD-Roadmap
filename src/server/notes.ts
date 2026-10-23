@@ -1,6 +1,6 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/db";
-import { activityEvents, items, notes } from "@/db/schema";
+import { activityEvents, items, notes, roadmaps, tracks } from "@/db/schema";
 import { AppError } from "./errors";
 import { checkWriteLimit } from "./progress";
 
@@ -45,4 +45,25 @@ export async function saveNote(
       .values({ userId, itemId, type: empty ? "note_deleted" : "note_saved", createdAt: now });
   });
   return empty ? null : { body, updatedAt: now };
+}
+
+/** The user's notes, newest first, with where each one lives. */
+export async function listRecentNotes(db: Db, userId: string, limit = 20) {
+  return db
+    .select({
+      itemId: items.id,
+      itemTitle: items.title,
+      trackId: tracks.id,
+      trackTitle: tracks.title,
+      roadmapTitle: roadmaps.title,
+      body: notes.body,
+      updatedAt: notes.updatedAt,
+    })
+    .from(notes)
+    .innerJoin(items, eq(items.id, notes.itemId))
+    .innerJoin(tracks, eq(tracks.id, items.trackId))
+    .innerJoin(roadmaps, eq(roadmaps.id, tracks.roadmapId))
+    .where(and(eq(notes.userId, userId), isNull(items.archivedAt), isNull(tracks.archivedAt)))
+    .orderBy(desc(notes.updatedAt))
+    .limit(limit);
 }

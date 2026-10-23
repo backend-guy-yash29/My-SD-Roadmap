@@ -165,7 +165,6 @@ function RoadmapNav({ nav, currentId }: { nav: Navigation; currentId: string | n
   return (
     <nav aria-label="Roadmaps">
       {link("/", "⌂", "Dashboard", pathname === "/")}
-      {link("/#explore", "◎", "Explore roadmaps", false)}
       <p className="mx-2 mb-1.5 mt-4 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
         My roadmaps
       </p>
@@ -182,14 +181,41 @@ function RoadmapNav({ nav, currentId }: { nav: Navigation; currentId: string | n
       ) : (
         <p className="mx-1 rounded-xl border border-dashed border-border-2 p-3.5 text-[0.8125rem] text-ink-3">
           {ids
-            ? "You haven't enrolled in a roadmap yet."
-            : "Sign in to build your list of roadmaps."}{" "}
-          <Link href="/#explore" className="font-semibold text-accent hover:underline">
-            Explore roadmaps →
-          </Link>
+            ? "You haven't enrolled in a roadmap yet. Open one from the menu to enroll."
+            : "Sign in, then enroll in roadmaps to list them here."}
         </p>
       )}
+      <BrowseList nav={nav} currentId={currentId} />
     </nav>
+  );
+}
+
+/** Every roadmap by category, for screens too narrow for the top-bar menus. */
+function BrowseList({ nav, currentId }: { nav: Navigation; currentId: string | null }) {
+  const categories = [...new Set(nav.map((r) => r.category ?? "Roadmaps"))];
+  return (
+    <div className="lg:hidden">
+      <p className="mx-2 mb-1 mt-5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
+        All roadmaps
+      </p>
+      {categories.map((c) => (
+        <div key={c} className="mb-1">
+          <p className="mx-2 mt-2 text-[0.6875rem] text-ink-3">{c}</p>
+          {nav
+            .filter((r) => (r.category ?? "Roadmaps") === c)
+            .map((r) => (
+              <Link
+                key={r.id}
+                href={`/${r.id}`}
+                aria-current={r.id === currentId ? "page" : undefined}
+                className={`block truncate rounded-lg px-2 py-[6px] text-sm ${r.id === currentId ? "font-semibold text-accent" : "text-ink-2 hover:bg-surface-2 hover:text-ink"}`}
+              >
+                {r.title}
+              </Link>
+            ))}
+        </div>
+      ))}
+    </div>
   );
 }
 

@@ -9,11 +9,10 @@ import { testDb } from "@/test/db";
 import { getNavigation, getRoadmap, getTrack, listRoadmaps } from "./content";
 import { enroll, listEnrollments, unenroll } from "./enrollments";
 import { getAppearance, updateAppearance } from "./appearance";
-import { getHome, setDailyGoal } from "./home";
 import { AppError } from "./errors";
-import { getNote, saveNote } from "./notes";
+import { getNote, listRecentNotes, saveNote } from "./notes";
 import { generateUsername, getMyProfile, getPublicProfile, updateProfile } from "./profile";
-import { getDashboard, getRoadmapProgress, setItemDone, setNeedsRevision } from "./progress";
+import { getRoadmapProgress, getStudyStats, setItemDone, setNeedsRevision } from "./progress";
 import { openResource } from "./resources";
 
 let t: Awaited<ReturnType<typeof testDb>>;
@@ -115,7 +114,7 @@ describe("setItemDone and streaks", () => {
     await setItemDone(db, "u1", BETA, true, at("2026-03-02T06:00:00Z"));
     const day3 = await setItemDone(db, "u1", GAMMA, true, at("2026-03-03T06:00:00Z"));
     expect(day3.currentStreak).toBe(3);
-    const dash = await getDashboard(db, "u1", at("2026-03-05T06:00:00Z"));
+    const dash = await getStudyStats(db, "u1", at("2026-03-05T06:00:00Z"));
     expect(dash.currentStreak).toBe(0);
     expect(dash.longestStreak).toBe(3);
     expect(dash.heatmap.days).toEqual([
@@ -178,21 +177,7 @@ describe("progress views", () => {
     await db.update(s.items).set({ archivedAt: new Date() }).where(eq(s.items.id, ALPHA));
     const progress = await getRoadmapProgress(db, "u1", "demo");
     expect([progress.done, progress.total]).toEqual([0, 3]);
-    expect((await getDashboard(db, "u1", at("2026-03-01T08:00:00Z"))).currentStreak).toBe(1);
-  });
-
-  it("points 'continue where you left off' at the latest activity", async () => {
-    await setItemDone(db, "u1", ALPHA, true, at("2026-03-01T06:00:00Z"));
-    await setItemDone(db, "u1", DELTA, true, at("2026-03-01T07:00:00Z"));
-    const dash = await getDashboard(db, "u1", at("2026-03-01T08:00:00Z"));
-    expect(dash.lastActivity).toMatchObject({
-      itemId: DELTA,
-      trackId: "demo/second",
-      roadmapId: "demo",
-    });
-    expect(dash.roadmaps).toEqual([
-      { id: "demo", title: "Demo", total: 4, done: 2, enrolled: true },
-    ]);
+    expect((await getStudyStats(db, "u1", at("2026-03-01T08:00:00Z"))).currentStreak).toBe(1);
   });
 });
 
@@ -223,7 +208,7 @@ describe("enrollments", () => {
     await unenroll(db, "u1", "demo", true, at("2026-03-01T07:00:00Z"));
     const progress = await getRoadmapProgress(db, "u1", "demo");
     expect([progress.done, progress.notedItemIds]).toEqual([0, []]);
-    expect((await getDashboard(db, "u1", at("2026-03-01T08:00:00Z"))).currentStreak).toBe(1);
+    expect((await getStudyStats(db, "u1", at("2026-03-01T08:00:00Z"))).currentStreak).toBe(1);
     expect((await getRoadmapProgress(db, "u2", "demo")).done).toBe(1);
   });
 });
@@ -248,86 +233,22 @@ describe("appearance", () => {
   });
 });
 
-describe("home dashboard", () => {
-  const now = at("2026-03-02T06:00:00Z");
-
-  it("starts empty for a new user", async () => {
-    const home = await getHome(db, "u1", now);
-    expect(home).toMatchObject({ dailyGoal: 5, today: 0, continueLearning: [], suggestion: null });
-    expect(home.week).toMatchObject({ total: 0, previousTotal: 0, activeDays: 0 });
-    expect(home.milestones.badges.every((b) => !b.earned)).toBe(true);
-  });
-
-  it("tracks today, the week, what to continue and finished tracks", async () => {
-    await setItemDone(db, "u1", ALPHA, true, at("2026-02-23T06:00:00Z")); // 7 days before: the previous week
-    await setItemDone(db, "u1", DELTA, true, now);
-    await setItemDone(db, "u1", GAMMA, true, now);
-    const home = await getHome(db, "u1", now);
-    expect(home.today).toBe(2);
-    expect(home.week).toMatchObject({ total: 2, previousTotal: 1, activeDays: 1 });
-    expect(home.continueLearning).toEqual([
-      expect.objectContaining({
-        itemId: BETA,
-        trackId: "demo/first",
-        roadmapTitle: "Demo",
-        done: 3,
-        total: 4,
-      }),
-    ]);
-    expect(home.milestones.tracksDone).toBe(1);
-    expect(home.milestones.closestTrack).toEqual({
-      trackId: "demo/first",
-      title: "First Track",
-      left: 1,
-    });
-    expect(home.milestones.badges.find((b) => b.id === "track-1")?.earned).toBe(true);
-  });
-
-  it("lists revision items, recent notes and opened resources", async () => {
-    await setNeedsRevision(db, "u1", GAMMA, true);
-    await saveNote(db, "u1", BETA, "x".repeat(200));
-    const [res] = await db.select().from(s.resources).where(eq(s.resources.itemId, ALPHA));
-    await openResource(db, res.id, "u1");
-    await openResource(db, res.id, "u1");
-    const home = await getHome(db, "u1", now);
-    expect(home.revision).toEqual({
-      total: 1,
-      items: [expect.objectContaining({ itemId: GAMMA })],
-    });
-    expect(home.notes[0]).toMatchObject({ itemId: BETA, snippet: `${"x".repeat(140)}…` });
-    expect(home.resources).toEqual([
-      expect.objectContaining({ resourceId: res.id, source: "Src" }),
-    ]);
-  });
-
-  it("suggests the next roadmap in course order", async () => {
-    await syncContent(
-      db,
-      parseContent(
-        contentDir({
-          ...basicContent,
-          "roadmaps.md": "# Roadmaps\n\n- demo\n- extra\n",
-          "extra/roadmap.md": "# Extra\n\n## Part\n\n- 01-one\n",
-          "extra/01-one.md": "# One\n\n## G\n\n- Epsilon\n",
-        }),
-      ),
-    );
-    await setItemDone(db, "u1", ALPHA, true, now);
-    expect((await getHome(db, "u1", now)).suggestion).toEqual({
-      from: { id: "demo", title: "Demo", percent: 25 },
-      to: { id: "extra", title: "Extra" },
-    });
-  });
-
-  it("validates the daily goal", async () => {
-    expect(await setDailyGoal(db, "u1", 8)).toBe(8);
-    expect((await getHome(db, "u1", now)).dailyGoal).toBe(8);
-    await expectCode(setDailyGoal(db, "u1", 0), "VALIDATION");
-    await expectCode(setDailyGoal(db, "u1", 2.5), "VALIDATION");
-  });
-});
-
 describe("notes", () => {
+  it("lists notes newest first with their track and roadmap", async () => {
+    await saveNote(db, "u1", ALPHA, "first", at("2026-03-01T06:00:00Z"));
+    await saveNote(db, "u1", DELTA, "second", at("2026-03-02T06:00:00Z"));
+    await saveNote(db, "u2", BETA, "not mine");
+    expect(await listRecentNotes(db, "u1")).toEqual([
+      expect.objectContaining({
+        itemId: DELTA,
+        body: "second",
+        trackId: "demo/second",
+        roadmapTitle: "Demo",
+      }),
+      expect.objectContaining({ itemId: ALPHA, body: "first", trackTitle: "First Track" }),
+    ]);
+  });
+
   it("saves, updates and deletes one plain-text note per item", async () => {
     expect(await getNote(db, "u1", ALPHA)).toBeNull();
     await saveNote(db, "u1", ALPHA, "first");

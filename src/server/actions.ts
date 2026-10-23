@@ -15,7 +15,6 @@ import {
   setItemDone as writeDone,
   setNeedsRevision as writeRevision,
 } from "./progress";
-import { setDailyGoal as writeDailyGoal } from "./home";
 import { updateProfile as writeProfile } from "./profile";
 
 async function requireUser() {
@@ -108,12 +107,4 @@ export async function getAppearance() {
 
 export async function updateAppearance(value: unknown) {
   return toResult(async () => writeAppearance(db, await requireUser(), value));
-}
-
-export async function setDailyGoal(goal: number) {
-  return toResult(async () => {
-    const saved = await writeDailyGoal(db, await requireUser(), parse(z.number(), goal));
-    revalidatePath("/");
-    return saved;
-  });
 }

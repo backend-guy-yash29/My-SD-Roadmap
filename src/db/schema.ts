@@ -140,16 +140,11 @@ export const users = pgTable(
     username: text("username").unique(),
     timezone: text("timezone").notNull().default("UTC"),
     profilePublic: boolean("profile_public").notNull().default(false),
-    /** Topics per day the dashboard's "Today's goal" aims for. */
-    dailyGoal: integer("daily_goal").notNull().default(5),
     /** Theme, font, text size and custom colours; validated by appearanceSchema. */
     appearance: jsonb("appearance").notNull().default({}),
     createdAt: tz("created_at").notNull().defaultNow(),
   },
-  (t) => [
-    check("users_username_format", sql`${t.username} ~ '^[a-z0-9_-]{3,30}$'`),
-    check("users_daily_goal_range", sql`${t.dailyGoal} BETWEEN 1 AND 50`),
-  ],
+  (t) => [check("users_username_format", sql`${t.username} ~ '^[a-z0-9_-]{3,30}$'`)],
 );
 
 export const accounts = pgTable(
