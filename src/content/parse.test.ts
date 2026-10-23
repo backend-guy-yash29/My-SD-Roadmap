@@ -25,12 +25,17 @@ describe("parseContent", () => {
     const content = parseContent(join(process.cwd(), "content"));
     expect(content.roadmaps.map((r) => r.id)).toEqual([
       "system-design",
+      "python",
+      "java",
+      "ml-maths",
       "ml-foundations",
+      "numpy-pandas-fastapi",
       "deep-learning",
       "rag-context-engineering",
+      "langchain-langgraph",
       "ml-ai-system-design",
     ]);
-    expect(flatten(content).items.length).toBeGreaterThan(1000);
+    expect(flatten(content).items.length).toBeGreaterThan(2000);
   });
 
   it("builds the tree with IDs, types, notes and resources", () => {
