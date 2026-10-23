@@ -13,9 +13,9 @@ export const dynamic = "force-dynamic";
 function Stat({ label, value, unit }: { label: string; value: number; unit: string }) {
   return (
     <Card className="!p-4">
-      <p className="text-[13px] font-semibold text-ink-2">{label}</p>
+      <p className="text-[0.8125rem] font-semibold text-ink-2">{label}</p>
       <p className="mt-1 flex items-baseline gap-1.5">
-        <b className="text-[34px] font-bold leading-none tracking-tight">{value}</b>
+        <b className="text-[2.125rem] font-bold leading-none tracking-tight">{value}</b>
         <span className="text-ink-2">{unit}</span>
       </p>
     </Card>
@@ -37,11 +37,11 @@ function RoadmapCard({
 }) {
   return (
     <li className="relative flex flex-col rounded-[14px] border border-border bg-surface p-5 transition-shadow hover:border-accent hover:shadow-card">
-      <span className="font-mono text-[11px] text-accent">ROADMAP</span>
+      <span className="font-mono text-[0.6875rem] text-accent">ROADMAP</span>
       {/* The link covers the card; the action sits above it. */}
       <Link
         href={`/${id}`}
-        className="mt-1 text-base font-semibold after:absolute after:inset-0 after:rounded-[14px]"
+        className="mt-1 text-base font-semibold text-heading after:absolute after:inset-0 after:rounded-[14px]"
       >
         {title}
       </Link>
@@ -53,7 +53,7 @@ function RoadmapCard({
 }
 
 function RoadmapTabs({ tab, mine, available }: { tab: Tab; mine: number; available: number }) {
-  const heading = "text-[11px] font-semibold uppercase tracking-[0.08em]";
+  const heading = "text-[0.6875rem] font-semibold uppercase tracking-[0.08em]";
   if (mine === 0) return <h2 className={`${heading} mb-3 text-ink-3`}>Available roadmaps</h2>;
   return (
     <nav aria-label="Roadmap lists" className="mb-4 flex gap-5 border-b border-border">
@@ -96,7 +96,7 @@ export default async function Home({ searchParams }: Props) {
           <p className="relative font-mono text-xs tracking-[0.04em] text-accent">
             STRUCTURED STUDY ROADMAPS
           </p>
-          <h1 className="relative mb-3 mt-2 max-w-[640px] text-[28px] font-bold leading-tight tracking-tight md:text-[34px]">
+          <h1 className="relative mb-3 mt-2 max-w-[640px] text-[1.75rem] font-bold leading-tight tracking-tight md:text-[2.125rem]">
             System design, ML and AI, one topic at a time.
           </h1>
           <p className="relative max-w-[600px] text-ink-2">
@@ -117,7 +117,7 @@ export default async function Home({ searchParams }: Props) {
               key={r.id}
               {...r}
               footer={
-                <span className="font-mono text-[11px] text-ink-3">
+                <span className="font-mono text-[0.6875rem] text-ink-3">
                   {r.trackCount} tracks · {r.itemCount} topics
                 </span>
               }
@@ -138,7 +138,7 @@ export default async function Home({ searchParams }: Props) {
   return (
     <PageMain>
       <PageHeader crumbs={[{ label: "Dashboard" }]} />
-      <h1 className="mb-5 mt-5 text-[26px] font-bold tracking-tight md:text-[30px]">
+      <h1 className="mb-5 mt-5 text-[1.625rem] font-bold tracking-tight md:text-[1.875rem]">
         Welcome back{firstName ? `, ${firstName}` : ""}
       </h1>
 
@@ -158,20 +158,22 @@ export default async function Home({ searchParams }: Props) {
             href={`/${dash.lastActivity.trackId}`}
             className="rounded-[14px] border border-border bg-surface p-4 hover:border-accent"
           >
-            <p className="text-[13px] font-semibold text-ink-2">Continue where you left off</p>
-            <p className="mt-1.5 line-clamp-1 font-semibold">{dash.lastActivity.trackTitle}</p>
+            <p className="text-[0.8125rem] font-semibold text-ink-2">Continue where you left off</p>
+            <p className="mt-1.5 line-clamp-1 font-semibold text-heading">
+              {dash.lastActivity.trackTitle}
+            </p>
             <p className="line-clamp-1 text-ink-2">{dash.lastActivity.itemTitle}</p>
           </Link>
         ) : (
           <Card className="!p-4">
-            <p className="text-[13px] font-semibold text-ink-2">Continue where you left off</p>
+            <p className="text-[0.8125rem] font-semibold text-ink-2">Continue where you left off</p>
             <p className="mt-1.5 text-ink-2">Enroll in a roadmap below to start.</p>
           </Card>
         )}
       </section>
 
       <Card className="mb-7">
-        <h2 className="mb-3 text-[15px] font-semibold">Activity</h2>
+        <h2 className="mb-3 text-[0.9375rem] font-semibold">Activity</h2>
         <StudyHeatmap heatmap={dash.heatmap} />
       </Card>
 
@@ -194,7 +196,7 @@ export default async function Home({ searchParams }: Props) {
                     gradient
                   />
                 ) : (
-                  <span className="font-mono text-[11px] text-ink-3">
+                  <span className="font-mono text-[0.6875rem] text-ink-3">
                     {c?.trackCount} tracks · {c?.itemCount} topics
                   </span>
                 )

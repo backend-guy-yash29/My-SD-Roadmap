@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { useEffect } from "react";
+import { AppearanceSync } from "./theme";
 
 const TIMEZONE_COOKIE = "tz";
 
@@ -19,6 +20,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <TimezoneCookie />
+      <AppearanceSync />
       {children}
     </SessionProvider>
   );

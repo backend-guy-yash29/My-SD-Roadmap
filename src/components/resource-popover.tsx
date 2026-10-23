@@ -61,9 +61,11 @@ export function ResourcePopover({
                   rel="noopener noreferrer"
                   className="block rounded-lg px-2.5 py-2 hover:bg-surface-2"
                 >
-                  <span className="block text-[11px] font-semibold text-accent">{r.source}</span>
+                  <span className="block text-[0.6875rem] font-semibold text-accent">
+                    {r.source}
+                  </span>
                   <span className="block text-ink">{r.title}</span>
-                  <span className="block text-[11px] text-ink-3">{hostOf(r.url)}</span>
+                  <span className="block text-[0.6875rem] text-ink-3">{hostOf(r.url)}</span>
                 </a>
               </li>
             ))}

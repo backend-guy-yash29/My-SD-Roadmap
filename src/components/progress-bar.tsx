@@ -25,7 +25,7 @@ export function ProgressBar({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-[86px] shrink-0 text-right font-mono text-[11px] text-ink-3">
+      <span className="w-[86px] shrink-0 text-right font-mono text-[0.6875rem] text-ink-3">
         {done}/{total} · {pct}%
       </span>
     </div>

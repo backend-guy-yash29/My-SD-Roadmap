@@ -1,59 +1,21 @@
 @import "tailwindcss";
 
-/* `dark:` utilities follow the Semi-dark theme. */
+/* `dark:` utilities follow the Dark theme. */
 @custom-variant dark (&:where([data-theme="dim"], [data-theme="dim"] *));
 
-:root,
-[data-theme="light"] {
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --surface-2: #f2f1ee;
-  --border: #e6e4df;
-  --border-2: #d9d6cf;
-  --ink: #1a1a18;
-  --ink-2: #57564f;
-  --ink-3: #807f77;
-  --accent: #4f46e5;
-  --accent-2: #9333ea;
-  --accent-ink: #ffffff;
-  --accent-soft: #eef0ff;
-  --done: #16a34a;
-  --done-soft: #e8f6ed;
-  --danger: #dc2626;
+/* Palette, font and size tokens are generated from src/lib/appearance.ts and set on <html>. */
+:root {
+  --heading: var(--ink);
   --shadow: 0 1px 2px rgb(20 20 15 / 0.04), 0 8px 24px rgb(20 20 15 / 0.06);
-  /* Heatmap: one blue ramp, light -> dark = fewer -> more */
-  --heat-0: #ebeae6;
-  --heat-1: #b7d3f6;
-  --heat-2: #6da7ec;
-  --heat-3: #2a78d6;
-  --heat-4: #184f95;
-  color-scheme: light;
+  /* Heatmap: the accent, from faint to full */
+  --heat-0: var(--surface-2);
+  --heat-1: color-mix(in srgb, var(--accent) 28%, var(--surface-2));
+  --heat-2: color-mix(in srgb, var(--accent) 52%, var(--surface-2));
+  --heat-3: color-mix(in srgb, var(--accent) 76%, var(--surface-2));
+  --heat-4: var(--accent);
 }
-
-[data-theme="dim"] {
-  --bg: #1c1f26;
-  --surface: #242833;
-  --surface-2: #2b303c;
-  --border: #353b48;
-  --border-2: #414856;
-  --ink: #eceef3;
-  --ink-2: #b4bac7;
-  --ink-3: #8f97a8;
-  --accent: #8b8cf8;
-  --accent-2: #c084fc;
-  --accent-ink: #14152b;
-  --accent-soft: #2f3250;
-  --done: #4ade80;
-  --done-soft: #23382c;
-  --danger: #f87171;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 10px 30px rgb(0 0 0 / 0.25);
-  /* Heatmap on the semi-dark surface: more = lighter */
-  --heat-0: #323846;
-  --heat-1: #104281;
-  --heat-2: #1c5cab;
-  --heat-3: #3987e5;
-  --heat-4: #9ec5f4;
-  color-scheme: dark;
+:root[data-theme="dim"] {
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px rgb(0 0 0 / 0.3);
 }
 
 @theme inline {
@@ -62,6 +24,7 @@
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
   --color-border-2: var(--border-2);
+  --color-heading: var(--heading);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
@@ -72,7 +35,7 @@
   --color-done: var(--done);
   --color-done-soft: var(--done-soft);
   --color-danger: var(--danger);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
   --shadow-card: var(--shadow);
 }
@@ -80,6 +43,14 @@
 body {
   background: var(--bg);
   color: var(--ink);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    color: var(--heading);
+  }
 }
 
 /* Small progress ring: set --p (0-100) and --ring-hole to the background behind it. */

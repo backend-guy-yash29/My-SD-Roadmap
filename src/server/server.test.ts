@@ -8,6 +8,7 @@ import { basicContent, contentDir } from "@/test/fixtures";
 import { testDb } from "@/test/db";
 import { getNavigation, getRoadmap, getTrack, listRoadmaps } from "./content";
 import { enroll, listEnrollments, unenroll } from "./enrollments";
+import { getAppearance, updateAppearance } from "./appearance";
 import { AppError } from "./errors";
 import { getNote, saveNote } from "./notes";
 import { generateUsername, getMyProfile, getPublicProfile, updateProfile } from "./profile";
@@ -209,6 +210,26 @@ describe("enrollments", () => {
     expect([progress.done, progress.notedItemIds]).toEqual([0, []]);
     expect((await getDashboard(db, "u1", at("2026-03-01T08:00:00Z"))).currentStreak).toBe(1);
     expect((await getRoadmapProgress(db, "u2", "demo")).done).toBe(1);
+  });
+});
+
+describe("appearance", () => {
+  it("returns defaults, saves a valid appearance and rejects bad input", async () => {
+    expect(await getAppearance(db, "u1")).toMatchObject({ palette: "crisp", mode: "system" });
+    const saved = await updateAppearance(db, "u1", {
+      palette: "paper",
+      mode: "dark",
+      colors: { dark: { accent: "#2dd4bf" } },
+    });
+    expect(saved).toMatchObject({ palette: "paper", font: "inter", colors: { light: {} } });
+    expect(await getAppearance(db, "u1")).toEqual(saved);
+    expect((await getAppearance(db, "u2")).palette).toBe("crisp");
+    await expectCode(updateAppearance(db, "u1", { palette: "neon" }), "VALIDATION");
+    await expectCode(
+      updateAppearance(db, "u1", { colors: { light: { heading: "red;}" } } }),
+      "VALIDATION",
+    );
+    await expectCode(updateAppearance(db, "u1", { extra: true }), "VALIDATION");
   });
 });
 

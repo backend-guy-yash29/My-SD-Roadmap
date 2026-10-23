@@ -23,7 +23,7 @@ function TrackList({ roadmap, showRings }: { roadmap: Navigation[number]; showRi
     >
       {roadmap.parts.map((part) => (
         <div key={part.id}>
-          <p className="mx-2 mb-1 mt-3 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+          <p className="mx-2 mb-1 mt-3 text-[0.65625rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
             {part.title}
           </p>
           {part.tracks.map((t) => {
@@ -35,14 +35,14 @@ function TrackList({ roadmap, showRings }: { roadmap: Navigation[number]; showRi
                 key={t.id}
                 href={`/${t.id}`}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-2.5 rounded-lg px-2 py-[6px] text-[13.5px] ${
+                className={`flex items-center gap-2.5 rounded-lg px-2 py-[6px] text-[0.84375rem] ${
                   active
                     ? "bg-accent-soft font-semibold text-accent"
                     : "text-ink-2 hover:bg-surface-2 hover:text-ink"
                 }`}
               >
                 <span
-                  className={`w-[18px] font-mono text-[11px] ${active ? "text-accent" : "text-ink-3"}`}
+                  className={`w-[18px] font-mono text-[0.6875rem] ${active ? "text-accent" : "text-ink-3"}`}
                 >
                   {pad(t.number)}
                 </span>
@@ -115,7 +115,10 @@ function RoadmapEntry({
           }`}
         >
           <span className="min-w-0 flex-1 truncate">{roadmap.title}</span>
-          <span className="font-mono text-[11px] font-normal text-ink-3" title={`${tracks} tracks`}>
+          <span
+            className="font-mono text-[0.6875rem] font-normal text-ink-3"
+            title={`${tracks} tracks`}
+          >
             {tracks}
           </span>
         </Link>
@@ -176,13 +179,13 @@ function RoadmapNav({ nav, currentId }: { nav: Navigation; currentId: string | n
         <span className="w-4 text-center">⌂</span>
         Dashboard
       </Link>
-      <p className="mx-2 mb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+      <p className="mx-2 mb-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
         {filtered ? "My roadmaps" : "Roadmaps"}
       </p>
       {shown.map(entry)}
       {viewing && (
         <>
-          <p className="mx-2 mb-1.5 mt-4 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+          <p className="mx-2 mb-1.5 mt-4 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
             Viewing · not enrolled
           </p>
           {entry(viewing)}
@@ -191,7 +194,7 @@ function RoadmapNav({ nav, currentId }: { nav: Navigation; currentId: string | n
       {filtered && shown.length < nav.length && (
         <Link
           href="/?tab=available"
-          className="mt-2 block rounded-lg px-2 py-[7px] text-[13px] text-accent hover:bg-surface-2"
+          className="mt-2 block rounded-lg px-2 py-[7px] text-[0.8125rem] text-accent hover:bg-surface-2"
         >
           Browse all roadmaps →
         </Link>
@@ -275,7 +278,7 @@ export function Sidebar({ nav }: { nav: Navigation }) {
           href="/"
           className="flex items-center gap-2.5 px-2 pb-[18px] font-bold tracking-tight"
         >
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-accent to-accent-2 text-[13px] text-white">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-accent to-accent-2 text-[0.8125rem] text-white">
             MR
           </span>
           My Roadmaps

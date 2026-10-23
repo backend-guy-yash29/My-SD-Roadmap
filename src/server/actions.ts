@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { currentUserId } from "@/auth";
 import { db } from "@/db";
+import { getAppearance as readAppearance, updateAppearance as writeAppearance } from "./appearance";
 import { AppError, toResult } from "./errors";
 import { enroll as writeEnroll, listEnrollments, unenroll as writeUnenroll } from "./enrollments";
 import { getNote as readNote, saveNote as writeNote } from "./notes";
@@ -98,4 +99,12 @@ export async function unenroll(id: string, deleteProgress: boolean) {
       parse(z.boolean(), deleteProgress),
     ),
   );
+}
+
+export async function getAppearance() {
+  return toResult(async () => readAppearance(db, await requireUser()));
+}
+
+export async function updateAppearance(value: unknown) {
+  return toResult(async () => writeAppearance(db, await requireUser(), value));
 }

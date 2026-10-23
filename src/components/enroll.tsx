@@ -105,7 +105,7 @@ export function EnrollControl({ roadmapId, title }: { roadmapId: string; title: 
     return (
       <Link
         href="/sign-in"
-        className="inline-block rounded-lg border border-border bg-surface px-3.5 py-1.5 text-[13px] font-semibold text-ink-2 hover:border-accent hover:text-accent"
+        className="inline-block rounded-lg border border-border bg-surface px-3.5 py-1.5 text-[0.8125rem] font-semibold text-ink-2 hover:border-accent hover:text-accent"
       >
         Sign in to enroll
       </Link>
@@ -122,7 +122,7 @@ export function EnrollControl({ roadmapId, title }: { roadmapId: string; title: 
             setError(await enroll(roadmapId));
             setBusy(false);
           }}
-          className="rounded-lg bg-accent px-3.5 py-1.5 text-[13px] font-semibold text-accent-ink disabled:opacity-50"
+          className="rounded-lg bg-accent px-3.5 py-1.5 text-[0.8125rem] font-semibold text-accent-ink disabled:opacity-50"
         >
           {busy ? "Enrolling…" : "Enroll"}
         </button>
@@ -133,14 +133,14 @@ export function EnrollControl({ roadmapId, title }: { roadmapId: string; title: 
 
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className="rounded-lg bg-done-soft px-2.5 py-1.5 text-[13px] font-semibold text-done">
+      <span className="rounded-lg bg-done-soft px-2.5 py-1.5 text-[0.8125rem] font-semibold text-done">
         ✓ Enrolled
       </span>
       <button
         type="button"
         onClick={() => setLeaving(true)}
         aria-label={`Leave ${title}`}
-        className="rounded-lg px-2.5 py-1.5 text-[13px] text-ink-3 hover:bg-surface-2 hover:text-danger"
+        className="rounded-lg px-2.5 py-1.5 text-[0.8125rem] text-ink-3 hover:bg-surface-2 hover:text-danger"
       >
         Leave
       </button>

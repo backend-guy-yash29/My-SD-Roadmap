@@ -135,6 +135,8 @@ export const users = pgTable(
     username: text("username").unique(),
     timezone: text("timezone").notNull().default("UTC"),
     profilePublic: boolean("profile_public").notNull().default(false),
+    /** Theme, font, text size and custom colours; validated by appearanceSchema. */
+    appearance: jsonb("appearance").notNull().default({}),
     createdAt: tz("created_at").notNull().defaultNow(),
   },
   (t) => [check("users_username_format", sql`${t.username} ~ '^[a-z0-9_-]{3,30}$'`)],

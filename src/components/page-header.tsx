@@ -7,7 +7,7 @@ export type Crumb = { label: string; href?: string };
 export function PageHeader({ crumbs }: { crumbs: Crumb[] }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <nav aria-label="Breadcrumb" className="min-w-0 truncate text-[13px] text-ink-3">
+      <nav aria-label="Breadcrumb" className="min-w-0 truncate text-[0.8125rem] text-ink-3">
         {crumbs.map((c, i) => (
           <span key={i}>
             {i > 0 && <span className="mx-1.5">/</span>}
