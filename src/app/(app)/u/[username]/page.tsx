@@ -45,7 +45,7 @@ export default async function ProfilePage({ params }: Props) {
           </span>
         )}
         <div className="relative">
-          <h1 className="text-[26px] font-bold tracking-tight">
+          <h1 className="text-[1.625rem] font-bold tracking-tight">
             {profile.name ?? profile.username}
           </h1>
           <p className="font-mono text-xs text-ink-3">@{profile.username}</p>
@@ -57,19 +57,19 @@ export default async function ProfilePage({ params }: Props) {
           ["Longest streak", profile.longestStreak],
         ].map(([label, value]) => (
           <Card key={label} className="!p-4">
-            <p className="text-[13px] font-semibold text-ink-2">{label}</p>
+            <p className="text-[0.8125rem] font-semibold text-ink-2">{label}</p>
             <p className="mt-1 flex items-baseline gap-1.5">
-              <b className="text-[34px] font-bold leading-none tracking-tight">{value}</b>
+              <b className="text-[2.125rem] font-bold leading-none tracking-tight">{value}</b>
               <span className="text-ink-2">{value === 1 ? "day" : "days"}</span>
             </p>
           </Card>
         ))}
       </section>
       <Card className="mb-7">
-        <h2 className="mb-3 text-[15px] font-semibold">Activity</h2>
+        <h2 className="mb-3 text-[0.9375rem] font-semibold">Activity</h2>
         <StudyHeatmap heatmap={profile.heatmap} />
       </Card>
-      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+      <h2 className="mb-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
         Progress
       </h2>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -79,6 +79,9 @@ export default async function ProfilePage({ params }: Props) {
             <ProgressBar done={r.done} total={r.total} label={`${r.title} progress`} gradient />
           </Card>
         ))}
+        {profile.roadmaps.length === 0 && (
+          <p className="text-ink-3">Not enrolled in any roadmap yet.</p>
+        )}
       </div>
     </PageMain>
   );

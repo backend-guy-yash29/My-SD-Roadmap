@@ -16,8 +16,8 @@ export async function testDb() {
     client,
     async reset() {
       await db.execute(sql`TRUNCATE roadmaps, parts, tracks, groups, items, resources, users,
-        accounts, sessions, verification_tokens, user_item_progress, item_completions, notes,
-        activity_events RESTART IDENTITY CASCADE`);
+        accounts, sessions, verification_tokens, enrollments, user_item_progress, item_completions,
+        notes, activity_events RESTART IDENTITY CASCADE`);
     },
   };
 }

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { currentUserId } from "@/auth";
 import { db } from "@/db";
+import { getAppearance as readAppearance, updateAppearance as writeAppearance } from "./appearance";
 import { AppError, toResult } from "./errors";
+import { enroll as writeEnroll, listEnrollments, unenroll as writeUnenroll } from "./enrollments";
 import { getNote as readNote, saveNote as writeNote } from "./notes";
 import { addDays } from "./dates";
 import {
@@ -29,6 +31,7 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
 }
 
 const itemId = z.string().min(1).max(300);
+const roadmapId = z.string().min(1).max(100);
 
 export async function setItemDone(id: string, done: boolean) {
   return toResult(async () =>
@@ -42,10 +45,8 @@ export async function setNeedsRevision(id: string, flag: boolean) {
   );
 }
 
-export async function getRoadmapProgress(roadmapId: string) {
-  return toResult(async () =>
-    readProgress(db, await requireUser(), parse(z.string().min(1).max(100), roadmapId)),
-  );
+export async function getRoadmapProgress(id: string) {
+  return toResult(async () => readProgress(db, await requireUser(), parse(roadmapId, id)));
 }
 
 export async function getNote(id: string) {
@@ -77,4 +78,33 @@ export async function getStudySummary() {
     });
     return { currentStreak: stats.currentStreak, longestStreak: stats.longestStreak, week };
   });
+}
+
+/** Roadmap ids the signed-in user is enrolled in. */
+export async function getEnrollments() {
+  return toResult(async () => listEnrollments(db, await requireUser()));
+}
+
+export async function enroll(id: string) {
+  return toResult(async () => writeEnroll(db, await requireUser(), parse(roadmapId, id)));
+}
+
+/** Leaves a roadmap, optionally deleting the user's ticks and notes in it. */
+export async function unenroll(id: string, deleteProgress: boolean) {
+  return toResult(async () =>
+    writeUnenroll(
+      db,
+      await requireUser(),
+      parse(roadmapId, id),
+      parse(z.boolean(), deleteProgress),
+    ),
+  );
+}
+
+export async function getAppearance() {
+  return toResult(async () => readAppearance(db, await requireUser()));
+}
+
+export async function updateAppearance(value: unknown) {
+  return toResult(async () => writeAppearance(db, await requireUser(), value));
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { RoadmapView } from "@/server/content";
+import { EnrollControl } from "./enroll";
 import { ProgressBar } from "./progress-bar";
 import { useRoadmapProgress } from "./roadmap-progress";
 import { RoadmapProgressCard, StreakCard, UpNextCard } from "./study-rail";
@@ -17,8 +18,11 @@ export function RoadmapMain({ roadmap }: { roadmap: RoadmapView }) {
   return (
     <>
       <section className="hero-glow mb-7 mt-5 rounded-2xl border border-border bg-surface px-6 py-6 shadow-card md:px-7">
-        <p className="relative font-mono text-xs tracking-[0.04em] text-accent">ROADMAP</p>
-        <h1 className="relative mb-2 mt-1.5 text-[26px] font-bold leading-tight tracking-tight md:text-[30px]">
+        <div className="relative flex flex-wrap items-center justify-between gap-3">
+          <p className="font-mono text-xs tracking-[0.04em] text-accent">ROADMAP</p>
+          <EnrollControl roadmapId={roadmap.id} title={roadmap.title} />
+        </div>
+        <h1 className="relative mb-2 mt-1.5 text-[1.625rem] font-bold leading-tight tracking-tight md:text-[1.875rem]">
           {roadmap.title}
         </h1>
         {roadmap.summary && <p className="relative max-w-[640px] text-ink-2">{roadmap.summary}</p>}
@@ -32,7 +36,7 @@ export function RoadmapMain({ roadmap }: { roadmap: RoadmapView }) {
             [roadmap.parts.length, "Parts"],
           ].map(([v, l]) => (
             <div key={l}>
-              <div className="text-[22px] font-bold tracking-tight">{v}</div>
+              <div className="text-[1.375rem] font-bold tracking-tight">{v}</div>
               <div className="text-xs text-ink-3">{l}</div>
             </div>
           ))}
@@ -49,7 +53,7 @@ export function RoadmapMain({ roadmap }: { roadmap: RoadmapView }) {
 
       {roadmap.parts.map((part) => (
         <section key={part.id} className="mb-7">
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+          <h2 className="mb-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-ink-3">
             {part.title}
           </h2>
           <ul className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
@@ -62,14 +66,16 @@ export function RoadmapMain({ roadmap }: { roadmap: RoadmapView }) {
                     href={`/${t.id}`}
                     className="flex h-full flex-col rounded-[14px] border border-border bg-surface p-4 transition-shadow hover:border-accent hover:shadow-card"
                   >
-                    <span className="font-mono text-[11px] text-accent">TRACK {pad(number)}</span>
-                    <span className="mt-1 font-semibold">{t.title}</span>
+                    <span className="font-mono text-[0.6875rem] text-accent">
+                      TRACK {pad(number)}
+                    </span>
+                    <span className="mt-1 font-semibold text-heading">{t.title}</span>
                     {t.summary && (
                       <span className="mt-1 line-clamp-2 flex-1 text-ink-2">{t.summary}</span>
                     )}
                     <div className="mt-3">
                       {done === null ? (
-                        <span className="font-mono text-[11px] text-ink-3">
+                        <span className="font-mono text-[0.6875rem] text-ink-3">
                           {t.itemCount} topics
                         </span>
                       ) : (

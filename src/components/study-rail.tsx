@@ -10,7 +10,7 @@ type Summary = Extract<Awaited<ReturnType<typeof getStudySummary>>, { ok: true }
 export function RailCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-3.5 rounded-[14px] border border-border bg-surface p-4">
-      <h3 className="mb-2.5 text-[13px] font-semibold text-ink-2">{title}</h3>
+      <h3 className="mb-2.5 text-[0.8125rem] font-semibold text-ink-2">{title}</h3>
       {children}
     </section>
   );
@@ -50,7 +50,7 @@ export function StreakCard() {
   return (
     <RailCard title="Current streak">
       <div className="flex items-baseline gap-1.5">
-        <b className="text-[34px] font-bold leading-none tracking-tight">
+        <b className="text-[2.125rem] font-bold leading-none tracking-tight">
           {summary?.currentStreak ?? "–"}
         </b>
         <span className="text-ink-2">{summary?.currentStreak === 1 ? "day" : "days"}</span>
@@ -61,7 +61,7 @@ export function StreakCard() {
         ).map((d) => (
           <span
             key={d.date}
-            className="flex-1 text-center text-[11px] text-ink-3"
+            className="flex-1 text-center text-[0.6875rem] text-ink-3"
             title={summary ? `${d.date}: ${d.count} completed` : undefined}
           >
             <i className={`mb-1 block h-7 rounded-md ${d.count ? "bg-done" : "bg-surface-2"}`} />
@@ -86,7 +86,7 @@ export function RoadmapProgressCard() {
   const pct = total ? Math.round((done / total) * 100) : 0;
   return (
     <RailCard title="Roadmap progress">
-      <div className="text-[26px] font-bold tracking-tight">{pct}%</div>
+      <div className="text-[1.625rem] font-bold tracking-tight">{pct}%</div>
       <div className="mt-1 text-xs text-ink-3">
         {done} of {total} topics
       </div>

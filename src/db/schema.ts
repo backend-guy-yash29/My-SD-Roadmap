@@ -135,6 +135,8 @@ export const users = pgTable(
     username: text("username").unique(),
     timezone: text("timezone").notNull().default("UTC"),
     profilePublic: boolean("profile_public").notNull().default(false),
+    /** Theme, font, text size and custom colours; validated by appearanceSchema. */
+    appearance: jsonb("appearance").notNull().default({}),
     createdAt: tz("created_at").notNull().defaultNow(),
   },
   (t) => [check("users_username_format", sql`${t.username} ~ '^[a-z0-9_-]{3,30}$'`)],
@@ -200,6 +202,21 @@ export const userItemProgress = pgTable(
       .on(t.userId)
       .where(sql`${t.isDone}`),
   ],
+);
+
+/** Roadmaps a user follows. Leaving a roadmap deletes the row; progress is kept unless the user asks otherwise. */
+export const enrollments = pgTable(
+  "enrollments",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    roadmapId: text("roadmap_id")
+      .notNull()
+      .references(() => roadmaps.id, { onDelete: "cascade" }),
+    enrolledAt: tz("enrolled_at").notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.roadmapId] })],
 );
 
 /** First completion per user and item. Never updated or deleted by the app. */

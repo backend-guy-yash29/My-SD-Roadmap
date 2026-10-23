@@ -81,7 +81,7 @@ function ItemRow({ item, trackId, signedIn }: { item: Item; trackId: string; sig
           {item.title}
         </span>
         {TYPE_LABEL[item.type] && (
-          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
+          <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[0.6875rem] font-semibold text-accent">
             {TYPE_LABEL[item.type]}
           </span>
         )}
@@ -154,7 +154,7 @@ function Group({
         >
           <path d="M4 6l4 4 4-4z" />
         </svg>
-        <h2 className="flex-1 text-[15px] font-semibold">{group.title}</h2>
+        <h2 className="flex-1 text-[0.9375rem] font-semibold">{group.title}</h2>
         {signedIn && (
           <>
             <span className="font-mono text-xs text-ink-3">
@@ -200,23 +200,23 @@ export function TrackMain({ track, eyebrow }: { track: Track; eyebrow: string })
     <>
       <section className="hero-glow mb-6 mt-5 rounded-2xl border border-border bg-surface px-6 py-6 shadow-card md:px-7">
         <p className="relative font-mono text-xs tracking-[0.04em] text-accent">{eyebrow}</p>
-        <h1 className="relative mb-2 mt-1.5 text-[26px] font-bold leading-tight tracking-tight md:text-[30px]">
+        <h1 className="relative mb-2 mt-1.5 text-[1.625rem] font-bold leading-tight tracking-tight md:text-[1.875rem]">
           {track.title}
         </h1>
         {track.summary && <p className="relative max-w-[620px] text-ink-2">{track.summary}</p>}
         <div className="relative mt-5 flex flex-wrap gap-7">
           <div>
-            <div className="text-[22px] font-bold tracking-tight">
+            <div className="text-[1.375rem] font-bold tracking-tight">
               {stats ? `${stats.done}/${stats.total}` : all.length}
             </div>
             <div className="text-xs text-ink-3">{stats ? "Completed" : "Topics"}</div>
           </div>
           <div>
-            <div className="text-[22px] font-bold tracking-tight">{track.groups.length}</div>
+            <div className="text-[1.375rem] font-bold tracking-tight">{track.groups.length}</div>
             <div className="text-xs text-ink-3">Subtopics</div>
           </div>
           <div>
-            <div className="text-[22px] font-bold tracking-tight">{links}</div>
+            <div className="text-[1.375rem] font-bold tracking-tight">{links}</div>
             <div className="text-xs text-ink-3">Study links</div>
           </div>
         </div>
@@ -253,7 +253,7 @@ export function TrackMain({ track, eyebrow }: { track: Track; eyebrow: string })
             type="button"
             aria-pressed={filter === f}
             onClick={() => setFilter(f)}
-            className="rounded-full border border-border bg-surface px-3 py-1.5 text-[12.5px] font-medium text-ink-2 aria-pressed:border-accent aria-pressed:bg-accent-soft aria-pressed:text-accent"
+            className="rounded-full border border-border bg-surface px-3 py-1.5 text-[0.78125rem] font-medium text-ink-2 aria-pressed:border-accent aria-pressed:bg-accent-soft aria-pressed:text-accent"
           >
             {label}
           </button>
